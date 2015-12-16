@@ -47,7 +47,7 @@ public final class PathTest {
 
     @Test
     public void testConstructor_illegalSegments() {
-        for (String illegal : new String[] {".", ".."}) {
+        for (String illegal : new String[] {"."}) {
             String path = "a/" + illegal + "/b";
             try {
                 new Path(path);
@@ -58,9 +58,14 @@ public final class PathTest {
     }
 
     @Test
-    public void testConstructor_normalizes() {
+    public void testConstructor_normalizesSlashes() {
         assertThat(new Path("a//b").toString(), is("a/b"));
         assertThat(new Path("a/").toString(), is("a"));
+    }
+
+    @Test
+    public void testConstructor_doesNotNormalizeBackwardsPaths() {
+        assertThat(new Path("a/../..b/..").toString(), is("a/../..b/.."));
     }
 
     @Test
@@ -68,6 +73,28 @@ public final class PathTest {
         Path path = new Path("a/b").toAbsolutePath();
         assertTrue(path.isAbsolute());
         assertThat(path, is(new Path("/a/b")));
+    }
+
+    @Test
+    public void testNormalize() {
+        assertThat(new Path("/a/b").normalize(), is(new Path("/a/b")));
+        assertThat(new Path("a/b").normalize(), is(new Path("a/b")));
+        assertThat(new Path("/").normalize(), is(new Path("/")));
+        assertThat(new Path("").normalize(), is(new Path("")));
+
+        assertThat(new Path("/a/../b").normalize(), is(new Path("/b")));
+        assertThat(new Path("a/../b").normalize(), is(new Path("b")));
+        assertThat(new Path("/a/..").normalize(), is(new Path("/")));
+        assertThat(new Path("a/..").normalize(), is(new Path("")));
+        assertThat(new Path("/..").normalize(), is(new Path("/")));
+        assertThat(new Path("..").normalize(), is(new Path("")));
+
+        assertThat(new Path("/a/b/c/../..").normalize(), is(new Path("/a")));
+        assertThat(new Path("a/b/c/../..").normalize(), is(new Path("a")));
+        assertThat(new Path("/../..").normalize(), is(new Path("/")));
+        assertThat(new Path("../..").normalize(), is(new Path("")));
+
+        assertThat(new Path("/a/..b").normalize(), is(new Path("/a/..b")));
     }
 
     @Test
@@ -79,6 +106,12 @@ public final class PathTest {
         assertThat(new Path("a/b/c").relativize(new Path("a/b/c")), is(new Path("")));
 
         assertThat(new Path("/a/b/c").relativize("/a/b/c/d/e/f"), is(new Path("d/e/f")));
+    }
+
+    @Test
+    public void testRelativize_normalizesFirst() {
+        assertThat(new Path("a/b/..").relativize(new Path("a/b")), is(new Path("b")));
+        assertThat(new Path("a/b").relativize(new Path("a/b/c/d/..")), is(new Path("c")));
     }
 
     @Test
@@ -94,6 +127,14 @@ public final class PathTest {
         expectedException.expectMessage(
                 "Relativize requires this path to be a prefix of the other path: /a/b/c vs /a/b/d");
         new Path("/a/b/c").relativize(new Path("/a/b/d"));
+    }
+
+    @Test
+    public void testRelativize_differentLengths() {
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage(
+                "Relativize requires this path to be a prefix of the other path: /a/b/c vs /a/b");
+        new Path("/a/b/c").relativize(new Path("/a/b"));
     }
 
     @Test
@@ -113,6 +154,12 @@ public final class PathTest {
     }
 
     @Test
+    public void testGetParent_normalizesFirst() {
+        assertThat(new Path("/a/b/..").getParent(), is(new Path("/")));
+        assertNull(new Path("/a/..").getParent());
+    }
+
+    @Test
     public void testResolve() {
         assertThat(new Path("/a").resolve(new Path("b")), is(new Path("/a/b")));
         assertThat(new Path("/a").resolve(new Path("/b")), is(new Path("/b")));
@@ -123,6 +170,14 @@ public final class PathTest {
     }
 
     @Test
+    public void testResolve_doesNotNormalizePaths() {
+        assertThat(new Path("a/b").resolve(new Path("..")), is(new Path("a/b/..")));
+        assertThat(new Path("a/b").resolve(new Path("../..")), is(new Path("a/b/../..")));
+
+        assertThat(new Path("a/b/..").resolve(new Path("c")), is(new Path("a/b/../c")));
+    }
+
+    @Test
     public void testGetRoot() {
         assertThat(new Path("/a").getRoot(), is(Path.ROOT_PATH));
         assertNull(new Path("a").getRoot());
@@ -130,6 +185,7 @@ public final class PathTest {
 
     @Test
     public void testStartsWith() {
+        assertTrue(new Path("a").startsWith(new Path("")));
         assertTrue(new Path("a/b").startsWith(new Path("a")));
         assertTrue(new Path("/a/b").startsWith(new Path("/a")));
         assertTrue(new Path("/a/b").startsWith(new Path("/a/b")));
@@ -139,7 +195,14 @@ public final class PathTest {
     }
 
     @Test
+    public void testStartsWith_normalizesFirst() {
+        assertTrue(new Path("../a").startsWith(new Path("a")));
+        assertTrue(new Path("a/b").startsWith(new Path("a/b/c/..")));
+    }
+
+    @Test
     public void testEndsWith() {
+        assertTrue(new Path("/a").endsWith(new Path("")));
         assertTrue(new Path("/a/b").endsWith(new Path("b")));
         assertTrue(new Path("a/b").endsWith(new Path("b")));
         assertTrue(new Path("a/b").endsWith(new Path("a/b")));
@@ -152,11 +215,29 @@ public final class PathTest {
     }
 
     @Test
+    public void testEndsWith_normalizesFirst() {
+        assertTrue(new Path("/a/b/..").endsWith(new Path("a")));
+        assertTrue(new Path("/a").endsWith(new Path("a/b/..")));
+    }
+
+    @Test
     public void testGetFileName() {
         assertThat(new Path("/a/b/").getFileName(), is(new Path("b")));
         assertThat(new Path("/a/b").getFileName(), is(new Path("b")));
         assertThat(new Path("/a/").getFileName(), is(new Path("a")));
         Path path = new Path("a");
         assertSame(path.getFileName(), path);
+    }
+
+    @Test
+    public void testGetFileName_normalizesFirst() {
+        assertThat(new Path("/a/b/..").getFileName(), is(new Path("a")));
+    }
+
+    @Test
+    public void testToString() {
+        assertThat(new Path("/a/b").toString(), is("/a/b"));
+        assertThat(new Path("a/b").toString(), is("a/b"));
+        assertThat(new Path("").toString(), is(""));
     }
 }

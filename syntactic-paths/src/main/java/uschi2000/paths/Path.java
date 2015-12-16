@@ -21,29 +21,32 @@ import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 
 /**
  * OS-independent implementation of Unix-style syntactic paths, analogous to {@code sun.nio.fs.UnixPath}. Major semantic
- * differences: (1) all paths consistent of UTF8 characters, independently of locale or other OS settings, (2) no
- * backwards paths (e.g., {@code a/..b/}).
+ * differences: all paths consistent of UTF8 characters, independently of locale or other OS settings.
  */
 public final class Path implements Comparable<Path> {
 
     public static final Path ROOT_PATH = new Path(ImmutableList.<String>of(), true);
     public static final char SEPARATOR = '/';
+    public static final String BACKWARDS_PATH = "..";
 
     private static final Splitter PATH_SPLITTER = Splitter.on(SEPARATOR).omitEmptyStrings();
     static final Joiner PATH_JOINER = Joiner.on(SEPARATOR);
     private static final char[] ILLEGAL_CHARS = new char[] {0};
-    private static final List<String> ILLEGAL_SEGMENTS = ImmutableList.of(".", "..");
+    private static final List<String> ILLEGAL_SEGMENTS = ImmutableList.of(".");
 
     private final List<String> segments;
     private final int size;
     private final boolean isAbsolute;
     private final Supplier<String> stringRepresentation;
+    private final Supplier<Path> normalizedPath;
 
     private Path(final List<String> segments, final boolean isAbsolute) {
         this.segments = segments;
@@ -52,11 +55,13 @@ public final class Path implements Comparable<Path> {
         stringRepresentation = Suppliers.memoize(new Supplier<String>() {
             @Override
             public String get() {
-                if (isAbsolute) {
-                    return "/" + PATH_JOINER.join(segments);
-                } else {
-                    return PATH_JOINER.join(segments);
-                }
+                return toStringInternal();
+            }
+        });
+        normalizedPath = Suppliers.memoize(new Supplier<Path>() {
+            @Override
+            public Path get() {
+                return normalizeInternal();
             }
         });
     }
@@ -83,6 +88,31 @@ public final class Path implements Comparable<Path> {
         return segments;
     }
 
+    private Path normalizeInternal() {
+        LinkedList<String> normalSegments = Lists.newLinkedList();
+        for (String segment : segments) {
+            if (segment.equals(BACKWARDS_PATH)) {
+                if (!normalSegments.isEmpty()) {
+                    normalSegments.removeLast();
+                } else {
+                    // Nothing to do.
+                }
+            } else {
+                normalSegments.add(segment);
+            }
+        }
+        return new Path(normalSegments, isAbsolute);
+    }
+
+    /**
+     * Returns a normalized version of this path, i.e., a path in which all backward navigation is resolved. For
+     * example, {@code /a/b/..} resolves to {@code /a}. The normalized path is absolute iff this path is absolute.
+     * Backward navigation in empty paths is a no-op, e.g., {@code a/../..} normalizes to the empty path.
+     */
+    public Path normalize() {
+        return normalizedPath.get();
+    }
+
     /**
      * Returns the {@link Path#ROOT_PATH root path} if the given path is absolute, or {@code null} else.
      */
@@ -95,31 +125,36 @@ public final class Path implements Comparable<Path> {
     }
 
     /**
-     * Returns the last segment of the given path, or {@code null} if is has no last segment.
+     * Returns the last segment of the normalized path, or {@code null} if it has no last segment.
      */
     public Path getFileName() {
-        if (segments.isEmpty()) {
+        Path normal = normalize();
+
+        if (normal.segments.isEmpty()) {
             return null;
         }
 
-        if (size == 1 && !isAbsolute) {
+        if (normal.size == 1 && !normal.isAbsolute) {
             return this;
         } else {
-            return new Path(segments.get(size - 1));
+            return new Path(normal.segments.get(normal.size - 1));
         }
     }
 
     /**
-     * For absolute paths, returns the second to last segment or the {@link Path#ROOT_PATH root path} if there is no
-     * such segment; for relative paths, returns the second to last segment or null if there is no such segment.
+     * For absolute paths, returns the second to last segment of the normalized path, or the {@link Path#ROOT_PATH root
+     * path} if there is no such segment; for relative paths, returns the second to last segment of the normalized path
+     * or null if there is no such segment.
      */
     public Path getParent() {
-        if (size == 0) {
+        Path normal = normalize();
+
+        if (normal.size == 0) {
             return null;
-        } else if (size == 1) {
+        } else if (normal.size == 1) {
             return getRoot(); // null if path is relative
         } else {
-            return new Path(segments.subList(0, size - 1), isAbsolute);
+            return new Path(normal.segments.subList(0, normal.size - 1), normal.isAbsolute);
         }
     }
 
@@ -132,7 +167,8 @@ public final class Path implements Comparable<Path> {
 
     /**
      * If the given path is {@link Path#isAbsolute absolute}, trivially returns the other path; else, returns the path
-     * obtained by concatenating the segments of this path and of the other path.
+     * obtained by concatenating the segments of this path and of the other path. The returned path is not {@link
+     * #normalize() normalized}.
      */
     public Path resolve(Path other) {
         if (other.isAbsolute) {
@@ -148,27 +184,32 @@ public final class Path implements Comparable<Path> {
     }
 
     /**
-     * Returns the suffix of the given path as seen relative from this path: If the given paths or of the same type
-     * (i.e., relative/absolute) and if the segments of this path are a prefix of the segments of the other path, then
-     * it returns the relative path defined by the suffix of segments of the other path that are not a common prefix
-     * between the two paths; throws otherwise.
-     * <p>
+     * Returns the suffix of the (normalized) given path as seen relative from this (normalized) path: If the given
+     * paths or of the same type (i.e., relative/absolute) and if the segments of this path are a prefix of the segments
+     * of the other path, then it returns the relative path defined by the suffix of segments of the other path that are
+     * not a common prefix between the two paths; throws otherwise. Relativization is performed with respect to the
+     * {@link #normalize() normalized} versions of this and the other path.
+     * <p/>
      * For example, if this path is {@code /a/b} and the other path is {@code /a/b/c/d}, returns {@code c/d}.
      */
     public Path relativize(Path other) {
-        if (this.isAbsolute() != other.isAbsolute()) {
-            throw new IllegalArgumentException("Cannot relativize absolute vs relative path: " + this + " vs " + other);
+        Path left = this.normalize();
+        Path right = other.normalize();
+
+        if (left.isAbsolute() != right.isAbsolute()) {
+            throw new IllegalArgumentException("Cannot relativize absolute vs relative path: " + left + " vs " + right);
         }
-        if (!this.segments.equals(other.segments.subList(0, this.size))) {
+        if (left.segments.size() > right.segments.size()
+                || !left.segments.equals(right.segments.subList(0, left.size))) {
             throw new IllegalArgumentException(
-                    "Relativize requires this path to be a prefix of the other path: " + this + " vs " + other);
+                    "Relativize requires this path to be a prefix of the other path: " + left + " vs " + right);
         }
 
-        if (this.size == 0 && !this.isAbsolute) {
-            return other;
+        if (left.size == 0 && !left.isAbsolute) {
+            return right;
         }
 
-        return new Path(other.segments.subList(this.size, other.size), false);
+        return new Path(right.segments.subList(left.size, right.size), false);
     }
 
     /** Equivalent to {@code relativize(new Path(other)}. */
@@ -177,41 +218,49 @@ public final class Path implements Comparable<Path> {
     }
 
     /**
-     * Returns true iff the segments of the given other path are a prefix (including equality) of the segments of this
-     * path, unless this path is relative and the other path is absolute. For example, {@code /a/b/c} starts with {@code
-     * /a/b} but not with {@code a/b}.
+     * Returns true iff the segments of the given (normalized) other path are a prefix (including equality) of the
+     * segments of this (normalized) path, unless this path is relative and the other path is absolute. For example,
+     * {@code /a/b/c} starts with {@code /a/b} but not with {@code a/b}, and {@code /a/../b} starts with {@code b} but
+     * not with {@code a}.
      */
     public boolean startsWith(Path other) {
-        if (this.size < other.size) {
+        Path left = this.normalize();
+        Path right = other.normalize();
+
+        if (left.size < right.size) {
             return false;
         }
 
-        if (this.isAbsolute != other.isAbsolute) {
+        if (left.isAbsolute != right.isAbsolute) {
             return false;
         } else {
-            return this.toString().startsWith(other.toString());
+            return left.toString().startsWith(right.toString());
         }
     }
 
     /**
-     * Returns true iff the segments of the given other path are a suffix (including equality) of the segments of this
-     * path, unless this path is relative and the other path is absolute.
+     * Returns true iff the segments of the given (normalized) other path are a suffix (including equality) of the
+     * segments of this (normalized) path, unless this path is relative and the other path is absolute. For example,
+     * {@code a/b} ends with {@code b} and {@code a/b/..} ends with {@code a}.
      */
     public boolean endsWith(Path other) {
-        if (this.size < other.size) {
+        Path left = this.normalize();
+        Path right = other.normalize();
+
+        if (left.size < right.size) {
             return false;
         }
 
         // Same length
-        if (this.size == other.size) {
-            return this.toString().endsWith(other.toString());
+        if (left.size == right.size) {
+            return left.toString().endsWith(right.toString());
         }
 
-        // Other is shorter than this path
-        if (other.isAbsolute) {
+        // Other is shorter than left path
+        if (right.isAbsolute) {
             return false;
         } else {
-            return this.toString().endsWith(other.toString());
+            return left.toString().endsWith(right.toString());
         }
     }
 
@@ -245,6 +294,15 @@ public final class Path implements Comparable<Path> {
         return Objects.hashCode(segments.toArray());
     }
 
+    private String toStringInternal() {
+        if (isAbsolute) {
+            return "/" + PATH_JOINER.join(segments);
+        } else {
+            return PATH_JOINER.join(segments);
+        }
+    }
+
+    /** Returns the string representation of this (non-normalized) path. */
     @Override
     public String toString() {
         return stringRepresentation.get();
