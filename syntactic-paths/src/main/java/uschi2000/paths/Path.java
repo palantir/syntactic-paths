@@ -28,8 +28,24 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 
 /**
- * OS-independent implementation of Unix-style syntactic paths, analogous to {@code sun.nio.fs.UnixPath}. Major semantic
- * differences: all paths consistent of UTF8 characters, independently of locale or other OS settings.
+ * OS-independent implementation of Unix-style syntactic paths, loosely analogous to {@code sun.nio.fs.UnixPath}.
+ * <p/>
+ * Syntactically, paths are composed from segments (which are arbitrary UTF strings that do not contain {@code '/'} and
+ * are not {@code '.'}) separated by the {@link #SEPARATOR separator character '/'}. For example, {@code foo/bar/baz} is
+ * a path.
+ * <p/>
+ * Every path is either {@link #isAbsolute() absolute} or relative and is either a {@link #isFolder folder} or not a
+ * folder: absolute paths start with {@link #SEPARATOR "/"} and folders end with {@link #SEPARATOR "/"}. The path {@link
+ * #ROOT_PATH root path "/"} is an absolute folder, the empty path {@code ""} is a relative non-folder. For example,
+ * {@code /foo/bar/} is an absolute folder path with segments {@code foo} and {@code bar}, and {@code foo/bar/baz} is a
+ * relative non-folder path with segments {@code foo, bar, baz}.
+ * <p/>
+ * The special segment {@code ".."} is a "backwards" segment similar to Unix/Linux paths; paths containing {@code ".."}
+ * can explicitly get {@link #normalize() normalized} in order to collapse the backwards references. For example, {@code
+ * new Path("foo/bar/../baz").normalize()} is the path {@code "foo/baz"}.
+ * <p/>
+ * The {@link #toString() string representation} of a path is the inverse to the {@link #Path(String) constructor},
+ * i.e., for any valid path string {@code s} it holds that {@code s.equals(new Path(s).toString()}.
  */
 public final class Path implements Comparable<Path> {
 
