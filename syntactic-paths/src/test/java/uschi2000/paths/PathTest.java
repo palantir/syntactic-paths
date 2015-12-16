@@ -77,6 +77,8 @@ public final class PathTest {
         assertThat(new Path("/a/b/c").relativize(new Path("/a/b/c/d/e/f")), is(new Path("d/e/f")));
         assertThat(new Path("a/b/c").relativize(new Path("a/b/c/d/e/f")), is(new Path("d/e/f")));
         assertThat(new Path("a/b/c").relativize(new Path("a/b/c")), is(new Path("")));
+
+        assertThat(new Path("/a/b/c").relativize("/a/b/c/d/e/f"), is(new Path("d/e/f")));
     }
 
     @Test
@@ -116,6 +118,8 @@ public final class PathTest {
         assertThat(new Path("/a").resolve(new Path("/b")), is(new Path("/b")));
         assertThat(new Path("/a/b").resolve(new Path("/c/d")), is(new Path("/c/d")));
         assertThat(new Path("a").resolve(new Path("b")), is(new Path("a/b")));
+
+        assertThat(new Path("/a/b").resolve("/c/d"), is(new Path("/c/d")));
     }
 
     @Test

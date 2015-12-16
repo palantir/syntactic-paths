@@ -142,6 +142,11 @@ public final class Path implements Comparable<Path> {
         }
     }
 
+    /** Equivalent to {@code resolve(new Path(other)}. */
+    public Path resolve(String other) {
+        return resolve(new Path(other));
+    }
+
     /**
      * Returns the suffix of the given path as seen relative from this path: If the given paths or of the same type
      * (i.e., relative/absolute) and if the segments of this path are a prefix of the segments of the other path, then
@@ -164,6 +169,11 @@ public final class Path implements Comparable<Path> {
         }
 
         return new Path(other.segments.subList(this.size, other.size), false);
+    }
+
+    /** Equivalent to {@code relativize(new Path(other)}. */
+    public Path relativize(String other) {
+        return relativize(new Path(other));
     }
 
     /**
