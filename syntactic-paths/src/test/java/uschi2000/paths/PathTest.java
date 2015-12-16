@@ -21,6 +21,7 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.ImmutableList;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -106,16 +107,22 @@ public final class PathTest {
 
     @Test
     public void testRelativize() {
-        assertThat(Path.ROOT_PATH.relativize(Path.ROOT_PATH), is(new Path("")));
-        assertThat(new Path("a/b").relativize(new Path("a/b")), is(new Path("")));
-        assertThat(new Path("/a/b").relativize(new Path("/a/b")), is(new Path("")));
         assertThat(Path.ROOT_PATH.relativize(new Path("/a/b")), is(new Path("a/b")));
         assertThat(new Path("/a").relativize(new Path("/a/b")), is(new Path("b")));
         assertThat(new Path("/a/b/c").relativize(new Path("/a/b/c/d/e/f")), is(new Path("d/e/f")));
         assertThat(new Path("a/b/c").relativize(new Path("a/b/c/d/e/f")), is(new Path("d/e/f")));
-        assertThat(new Path("a/b/c").relativize(new Path("a/b/c")), is(new Path("")));
 
         assertThat(new Path("/a/b/c").relativize("/a/b/c/d/e/f"), is(new Path("d/e/f")));
+
+        for (String path : ImmutableList.of("/", "/a/b", "a/b")) {
+            try {
+                new Path(path).relativize(new Path(path));
+            } catch (IllegalArgumentException e) {
+                assertThat(e.getMessage(), is(String.format(
+                        "Relativize requires this path to be a proper prefix of the other path: %s vs %s",
+                        path, path)));
+            }
+        }
     }
 
     @Test
@@ -126,13 +133,11 @@ public final class PathTest {
 
     @Test
     public void testRelativize_preservesIsFolderOfOtherPath() {
-        assertTrue(new Path("a/").relativize(new Path("a/")).isFolder());
         assertTrue(new Path("a/").relativize(new Path("a/b/")).isFolder());
         assertTrue(new Path("a").relativize(new Path("a/b/")).isFolder());
 
         assertFalse(new Path("a/").relativize(new Path("a/b")).isFolder());
         assertFalse(new Path("a").relativize(new Path("a/b")).isFolder());
-        assertFalse(new Path("a").relativize(new Path("a")).isFolder());
     }
 
     @Test
@@ -146,7 +151,7 @@ public final class PathTest {
     public void testRelativize_noPrefix() {
         expectedException.expect(IllegalArgumentException.class);
         expectedException.expectMessage(
-                "Relativize requires this path to be a prefix of the other path: /a/b/c vs /a/b/d");
+                "Relativize requires this path to be a proper prefix of the other path: /a/b/c vs /a/b/d");
         new Path("/a/b/c").relativize(new Path("/a/b/d"));
     }
 
@@ -154,7 +159,7 @@ public final class PathTest {
     public void testRelativize_differentLengths() {
         expectedException.expect(IllegalArgumentException.class);
         expectedException.expectMessage(
-                "Relativize requires this path to be a prefix of the other path: /a/b/c vs /a/b");
+                "Relativize requires this path to be a proper prefix of the other path: /a/b/c vs /a/b");
         new Path("/a/b/c").relativize(new Path("/a/b"));
     }
 

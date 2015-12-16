@@ -195,10 +195,10 @@ public final class Path implements Comparable<Path> {
 
     /**
      * Returns the suffix of the (normalized) given path as seen relative from this (normalized) path: If the given
-     * paths or of the same type (i.e., relative/absolute) and if the segments of this path are a prefix of the segments
-     * of the other path, then it returns the relative path defined by the suffix of segments of the other path that are
-     * not a common prefix between the two paths; throws otherwise. Relativization is performed with respect to the
-     * {@link #normalize() normalized} versions of this and the other path.
+     * paths or of the same type (i.e., relative/absolute) and if the segments of this path are a proper prefix of the
+     * segments of the other path, then it returns the relative path defined by the suffix of segments of the other path
+     * that are not a common prefix between the two paths; throws otherwise. Relativization is performed with respect to
+     * the {@link #normalize() normalized} versions of this and the other path.
      * <p/>
      * For example, if this path is {@code /a/b} and the other path is {@code /a/b/c/d}, returns {@code c/d}.
      */
@@ -209,10 +209,10 @@ public final class Path implements Comparable<Path> {
         if (left.isAbsolute() != right.isAbsolute()) {
             throw new IllegalArgumentException("Cannot relativize absolute vs relative path: " + left + " vs " + right);
         }
-        if (left.segments.size() > right.segments.size()
+        if (left.segments.size() >= right.segments.size()
                 || !left.segments.equals(right.segments.subList(0, left.size))) {
             throw new IllegalArgumentException(
-                    "Relativize requires this path to be a prefix of the other path: " + left + " vs " + right);
+                    "Relativize requires this path to be a proper prefix of the other path: " + left + " vs " + right);
         }
 
         if (left.size == 0 && !left.isAbsolute) {
