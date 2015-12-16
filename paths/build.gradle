@@ -1,0 +1,11 @@
+sourceCompatibility = '1.7'
+
+apply from: "${rootDir}/gradle/publish.gradle"
+
+dependencies {
+    compile "com.google.guava:guava:${guavaVersion}"
+    compile "org.apache.commons:commons-lang3:${commonsLangVersion}"
+
+    testCompile "junit:junit:${junitVersion}"
+    testCompile "org.hamcrest:hamcrest-all:${hamcrestVersion}"
+}

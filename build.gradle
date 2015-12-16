@@ -1,0 +1,40 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath "com.palantir:gradle-baseline-java:${baselineVersion}"
+        classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:${bintrayPlugin}"
+    }
+}
+
+plugins {
+    id 'com.palantir.git-version' version '0.2.0'
+}
+
+apply plugin: 'com.palantir.baseline-config' // provides baselineUpdateConfig task
+apply plugin: 'com.palantir.baseline-idea'
+
+repositories {
+    jcenter() // needed for baselineUpdateConfig task
+}
+
+allprojects {
+    version gitVersion()
+    group 'uschi2000'
+}
+
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'com.palantir.baseline-checkstyle'
+    apply plugin: 'com.palantir.baseline-eclipse'
+    apply plugin: 'com.palantir.baseline-findbugs'
+    apply plugin: 'com.palantir.baseline-idea'
+
+    repositories {
+        jcenter()
+    }
+
+    sourceCompatibility = 1.7
+}

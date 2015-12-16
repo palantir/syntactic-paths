@@ -1,0 +1,17 @@
+sudo: false
+language: java
+jdk:
+- oraclejdk7
+env:
+  global:
+  - secure: jKZUXbCz8cJ3wDxCDZyKeBVcfQpSJ0DUfXfKTDcGkRHqGzCXRgb6sbmNlj3TrNJOaQbCkdPCFCMw6WG0I7X4fBfJBa9yyDqBybTQ3/FeepPlWm9WP2is/3nfzbj4rfFglTvczkzMvXcWpsyxhx/c5f7HlTpc/vLf8PBorbrPMKJ3J2duX+yMXaQNI7Sg7/KHsF5TPnUrpRnEos+ScK8BVRQf30jTkiAAVZe9Up4996F3kxGD4aT9bGTfwGobctT/0IyHiVcHFJZyKmyU4A+1JWZ18zpQkVVAyONZnzQpWUF+jLCMGezDT2nuY3E2QopIny+Or4R+jKAeFZzvA41jaKOu4TTGA7WB1BynRjw4zg2YL5Ld52OX+CmPUqxPEjlhdtHs56wP7vcik869YRCRhvD0DBwUmqIk22va/EHt6xJ1Rjej1lqnRdEsY+udsLkuiXfu9SthUDWhuuYgGKH2/sb5hp5b1JeMQ9xZ16ZDHd/fXkVH2w5Dh+R47FJY3Ge9oToR/y5E9sKwwsDPf+WSw0quuofy3JMT6aby6+hkNjhHfNKmynMbIbVV/ukff0FWRR70ZgFZ1DPKkvkuMswyyT+ACM17L5RbHSlX9QLufrItj3gaB4oYc4yNlSlYAYRaCJoakX4+etTzME3nI98C2dtb6V0yiT7moL3ylH0mmjo=
+  - secure: iNER6KkR5c5pEROh/Plnj8L7+TFEk1riNbodNXxCHwqAzIxeavH/sxA+puIMRebNkvt0DqBwcy5odnPWR8Uc2bmxZzgQ5bsjzkbG2VERTJk6H9Gwqk+o1KwExRITROE7rabX15JZee8dUD+CX0VdTpZsaY8m0SpwonX3Vs/KKaYc78BQ3WLUBJ2z1iK4eAhWKVMwlsK5VFYlzN73ByNKPnPOC1K3euxvWpN1y+JQZWDZ2NLFyNp8VQKbFwjF9WMfq/9pXzjCE5/UH2RhPNvlMp6bWVolBQoTzrcJoow2FBHXVmC8CHALFMyC53rKvPVVHiMD9XSsXeq3L810q6rXHJpSnKGtT3RXa9NwrjzKvGRZKRJ/4hX9XoMr1mH4CRegyH+ezdET+C66RcyYPbiWZ74pzoFc0RxHhEC1xKJbdE2ZEqgPoipxmyfguHoxz/gq00z5jLae1a31In88bnpAFl31pX9qqmc7oJXZSXs2gnNJkB4iq1xHQkZZB1ZH5RV/Xo/Sanw78Lt9jv/0kkS9DnahtN2ntTdQaVGEss2SyDuTxOXVYu80fn33dKgHzyjM2qK5WPvXME26icN2JYNIcR99pintFiFsirXEvbwgH5gUrdH8s0aUEkcjlpohtysLhHsDq5Jj6l/Mz5xQzlvh/AAiy+ArRnzKYMNQBQ3/tyc=
+after_success:
+- "./gradlew bintrayUpload"
+cache:
+  directories:
+  - "$HOME/.gradle/wrapper"
+  - "$HOME/.gradle/native"
+  - "$HOME/.gradle/caches/2.6"
+  - "$HOME/.gradle/caches/modules-2/files-2.1"
+  - "$HOME/.gradle/caches/modules-2/metadata-2.15"
