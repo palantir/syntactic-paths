@@ -22,7 +22,7 @@ repositories {
 
 allprojects {
     version gitVersion()
-    group 'uschi2000'
+    group 'uschi2000.paths'
 }
 
 subprojects {
