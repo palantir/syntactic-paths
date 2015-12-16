@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/uschi2000/syntactic-paths.svg)](https://travis-ci.org/uschi2000/syntactic-paths)
+
 Syntactic Path Library
 ======================
 
