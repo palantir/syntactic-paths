@@ -27,6 +27,7 @@ public final class PathsTest {
         assertThat(Paths.get("/"), is(new Path("/")));
         assertThat(Paths.get("a"), is(new Path("a")));
         assertThat(Paths.get("/a"), is(new Path("/a")));
+        assertThat(Paths.get("/a/"), is(new Path("/a/")));
     }
 
     @Test
@@ -36,9 +37,10 @@ public final class PathsTest {
         assertThat(Paths.get("", "", "/b"), is(new Path("/b")));
         assertThat(Paths.get("", "", "/", "b"), is(new Path("/b")));
         assertThat(Paths.get("a", "b"), is(new Path("a/b")));
+        assertThat(Paths.get("a", "/"), is(new Path("a/")));
         assertThat(Paths.get("/a", "b"), is(new Path("/a/b")));
         assertThat(Paths.get("/a", "b", "c", "d"), is(new Path("/a/b/c/d")));
-        assertThat(Paths.get("/a", "/b", "/c", "/d", "/"), is(new Path("/a/b/c/d")));
+        assertThat(Paths.get("/a", "/b", "/c", "/d", "/"), is(new Path("/a/b/c/d/")));
         assertThat(Paths.get("/a", "/b", "//", "/c"), is(new Path("/a/b/c")));
     }
 }

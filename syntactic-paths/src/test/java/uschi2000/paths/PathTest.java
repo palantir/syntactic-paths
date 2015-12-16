@@ -60,7 +60,6 @@ public final class PathTest {
     @Test
     public void testConstructor_normalizesSlashes() {
         assertThat(new Path("a//b").toString(), is("a/b"));
-        assertThat(new Path("a/").toString(), is("a"));
     }
 
     @Test
@@ -73,6 +72,14 @@ public final class PathTest {
         Path path = new Path("a/b").toAbsolutePath();
         assertTrue(path.isAbsolute());
         assertThat(path, is(new Path("/a/b")));
+    }
+
+    @Test
+    public void testIsFolder() {
+        assertTrue(new Path("/").isFolder());
+        assertTrue(new Path("/a/").isFolder());
+        assertTrue(new Path("a/").isFolder());
+        assertFalse(new Path("a").isFolder());
     }
 
     @Test
@@ -99,6 +106,9 @@ public final class PathTest {
 
     @Test
     public void testRelativize() {
+        assertThat(Path.ROOT_PATH.relativize(Path.ROOT_PATH), is(new Path("")));
+        assertThat(new Path("a/b").relativize(new Path("a/b")), is(new Path("")));
+        assertThat(new Path("/a/b").relativize(new Path("/a/b")), is(new Path("")));
         assertThat(Path.ROOT_PATH.relativize(new Path("/a/b")), is(new Path("a/b")));
         assertThat(new Path("/a").relativize(new Path("/a/b")), is(new Path("b")));
         assertThat(new Path("/a/b/c").relativize(new Path("/a/b/c/d/e/f")), is(new Path("d/e/f")));
@@ -112,6 +122,17 @@ public final class PathTest {
     public void testRelativize_normalizesFirst() {
         assertThat(new Path("a/b/..").relativize(new Path("a/b")), is(new Path("b")));
         assertThat(new Path("a/b").relativize(new Path("a/b/c/d/..")), is(new Path("c")));
+    }
+
+    @Test
+    public void testRelativize_preservesIsFolderOfOtherPath() {
+        assertTrue(new Path("a/").relativize(new Path("a/")).isFolder());
+        assertTrue(new Path("a/").relativize(new Path("a/b/")).isFolder());
+        assertTrue(new Path("a").relativize(new Path("a/b/")).isFolder());
+
+        assertFalse(new Path("a/").relativize(new Path("a/b")).isFolder());
+        assertFalse(new Path("a").relativize(new Path("a/b")).isFolder());
+        assertFalse(new Path("a").relativize(new Path("a")).isFolder());
     }
 
     @Test
@@ -144,10 +165,10 @@ public final class PathTest {
 
     @Test
     public void testGetParent() {
-        assertThat(new Path("/a/b/c").getParent(), is(new Path("/a/b")));
-        assertThat(new Path("/a/b/c/").getParent(), is(new Path("/a/b")));
-        assertThat(new Path("a/b/c").getParent(), is(new Path("a/b")));
-        assertThat(new Path("a/b/c/").getParent(), is(new Path("a/b")));
+        assertThat(new Path("/a/b/c").getParent(), is(new Path("/a/b/")));
+        assertThat(new Path("/a/b/c/").getParent(), is(new Path("/a/b/")));
+        assertThat(new Path("a/b/c").getParent(), is(new Path("a/b/")));
+        assertThat(new Path("a/b/c/").getParent(), is(new Path("a/b/")));
         assertThat(new Path("/a").getParent(), is(Path.ROOT_PATH));
         assertNull(new Path("a").getParent());
         assertNull(new Path("/").getParent());
@@ -178,6 +199,15 @@ public final class PathTest {
     }
 
     @Test
+    public void testResolve_preservesIsFolderOfOtherPath() {
+        assertTrue(new Path("a").resolve(new Path("/")).isFolder());
+        assertTrue(new Path("a").resolve(new Path("b/")).isFolder());
+
+        assertFalse(new Path("a").resolve(new Path("b")).isFolder());
+        assertFalse(new Path("a/").resolve(new Path("b")).isFolder());
+    }
+
+    @Test
     public void testGetRoot() {
         assertThat(new Path("/a").getRoot(), is(Path.ROOT_PATH));
         assertNull(new Path("a").getRoot());
@@ -185,39 +215,44 @@ public final class PathTest {
 
     @Test
     public void testStartsWith() {
-        assertTrue(new Path("a").startsWith(new Path("")));
-        assertTrue(new Path("a/b").startsWith(new Path("a")));
-        assertTrue(new Path("/a/b").startsWith(new Path("/a")));
-        assertTrue(new Path("/a/b").startsWith(new Path("/a/b")));
+        assertTrue(new Path("a").startsWithSegment(new Path("")));
+        assertTrue(new Path("a/b").startsWithSegment(new Path("a")));
+        assertTrue(new Path("/a/b").startsWithSegment(new Path("/a")));
+        assertTrue(new Path("/a/b").startsWithSegment(new Path("/a/b")));
 
-        assertFalse(new Path("/a/b").startsWith(new Path("a")));
-        assertFalse(new Path("/a/b").startsWith(new Path("/a/b/c")));
+        assertFalse(new Path("/a/b").startsWithSegment(new Path("a")));
+        assertFalse(new Path("/a/b").startsWithSegment(new Path("/a/b/c")));
     }
 
     @Test
-    public void testStartsWith_normalizesFirst() {
-        assertTrue(new Path("../a").startsWith(new Path("a")));
-        assertTrue(new Path("a/b").startsWith(new Path("a/b/c/..")));
+    public void testStartsWithSegment_normalizesFirst() {
+        assertTrue(new Path("../a").startsWithSegment(new Path("a")));
+        assertTrue(new Path("a/b").startsWithSegment(new Path("a/b/c/..")));
     }
 
     @Test
-    public void testEndsWith() {
-        assertTrue(new Path("/a").endsWith(new Path("")));
-        assertTrue(new Path("/a/b").endsWith(new Path("b")));
-        assertTrue(new Path("a/b").endsWith(new Path("b")));
-        assertTrue(new Path("a/b").endsWith(new Path("a/b")));
-        assertTrue(new Path("/a/b").endsWith(new Path("/a/b")));
-        assertTrue(new Path("/a/b").endsWith(new Path("a/b")));
+    public void testEndsWithSegment() {
+        assertTrue(new Path("/a").endsWithSegment(new Path("")));
+        assertTrue(new Path("/a/b").endsWithSegment(new Path("b")));
+        assertTrue(new Path("a/b").endsWithSegment(new Path("b")));
+        assertTrue(new Path("a/b").endsWithSegment(new Path("a/b")));
+        assertTrue(new Path("/a/b").endsWithSegment(new Path("/a/b")));
+        assertTrue(new Path("/a/b").endsWithSegment(new Path("a/b")));
 
-        assertFalse(new Path("a/b").endsWith(new Path("/a/b")));
-        assertFalse(new Path("/a/b").endsWith(new Path("/b")));
-        assertFalse(new Path("/a/b").endsWith(new Path("/a/b/c")));
+        assertTrue(new Path("/a/b/").endsWithSegment(new Path("b")));
+        assertTrue(new Path("/a/b/").endsWithSegment(new Path("b/")));
+        assertTrue(new Path("/a/b").endsWithSegment(new Path("b")));
+        assertTrue(new Path("/a/b").endsWithSegment(new Path("b/")));
+
+        assertFalse(new Path("a/b").endsWithSegment(new Path("/a/b")));
+        assertFalse(new Path("/a/b").endsWithSegment(new Path("/b")));
+        assertFalse(new Path("/a/b").endsWithSegment(new Path("/a/b/c")));
     }
 
     @Test
-    public void testEndsWith_normalizesFirst() {
-        assertTrue(new Path("/a/b/..").endsWith(new Path("a")));
-        assertTrue(new Path("/a").endsWith(new Path("a/b/..")));
+    public void testEndsWithSegment_normalizesFirst() {
+        assertTrue(new Path("/a/b/..").endsWithSegment(new Path("a")));
+        assertTrue(new Path("/a").endsWithSegment(new Path("a/b/..")));
     }
 
     @Test
@@ -239,5 +274,7 @@ public final class PathTest {
         assertThat(new Path("/a/b").toString(), is("/a/b"));
         assertThat(new Path("a/b").toString(), is("a/b"));
         assertThat(new Path("").toString(), is(""));
+        assertThat(new Path("/").toString(), is("/"));
+        assertThat(new Path("a/").toString(), is("a/"));
     }
 }

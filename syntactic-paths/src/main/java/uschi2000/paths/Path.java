@@ -33,25 +33,28 @@ import org.apache.commons.lang3.StringUtils;
  */
 public final class Path implements Comparable<Path> {
 
-    public static final Path ROOT_PATH = new Path(ImmutableList.<String>of(), true);
-    public static final char SEPARATOR = '/';
+    public static final Path ROOT_PATH = new Path(ImmutableList.<String>of(), true, true);
+    public static final char SEPARATOR_CHAR = '/';
+    public static final String SEPARATOR = "/";
     public static final String BACKWARDS_PATH = "..";
 
-    private static final Splitter PATH_SPLITTER = Splitter.on(SEPARATOR).omitEmptyStrings();
-    static final Joiner PATH_JOINER = Joiner.on(SEPARATOR);
+    private static final Splitter PATH_SPLITTER = Splitter.on(SEPARATOR_CHAR).omitEmptyStrings();
+    static final Joiner PATH_JOINER = Joiner.on(SEPARATOR_CHAR);
     private static final char[] ILLEGAL_CHARS = new char[] {0};
     private static final List<String> ILLEGAL_SEGMENTS = ImmutableList.of(".");
 
     private final List<String> segments;
     private final int size;
     private final boolean isAbsolute;
+    private final boolean isFolder;
     private final Supplier<String> stringRepresentation;
     private final Supplier<Path> normalizedPath;
 
-    private Path(final List<String> segments, final boolean isAbsolute) {
+    private Path(final List<String> segments, final boolean isAbsolute, boolean isFolder) {
         this.segments = segments;
         this.size = segments.size();
         this.isAbsolute = isAbsolute;
+        this.isFolder = isFolder;
         stringRepresentation = Suppliers.memoize(new Supplier<String>() {
             @Override
             public String get() {
@@ -67,7 +70,7 @@ public final class Path implements Comparable<Path> {
     }
 
     Path(String input) {
-        this(checkAndSplit(input), input.startsWith("/"));
+        this(checkAndSplit(input), input.startsWith(SEPARATOR), input.endsWith(SEPARATOR));
     }
 
     private static List<String> checkAndSplit(String path) {
@@ -101,7 +104,7 @@ public final class Path implements Comparable<Path> {
                 normalSegments.add(segment);
             }
         }
-        return new Path(normalSegments, isAbsolute);
+        return new Path(normalSegments, isAbsolute, isFolder);
     }
 
     /**
@@ -124,6 +127,11 @@ public final class Path implements Comparable<Path> {
         }
     }
 
+    /** Returns true iff the string representation of this path ends with {@link #SEPARATOR "/"}. */
+    public boolean isFolder() {
+        return isFolder;
+    }
+
     /**
      * Returns the last segment of the normalized path, or {@code null} if it has no last segment.
      */
@@ -142,9 +150,8 @@ public final class Path implements Comparable<Path> {
     }
 
     /**
-     * For absolute paths, returns the second to last segment of the normalized path, or the {@link Path#ROOT_PATH root
-     * path} if there is no such segment; for relative paths, returns the second to last segment of the normalized path
-     * or null if there is no such segment.
+     * Returns the path represented by the {@code [0, size-1]} first segments of this (normalized) path, or null if
+     * there is no such path. The returned path is a {@link #isFolder() folder}.
      */
     public Path getParent() {
         Path normal = normalize();
@@ -154,7 +161,7 @@ public final class Path implements Comparable<Path> {
         } else if (normal.size == 1) {
             return getRoot(); // null if path is relative
         } else {
-            return new Path(normal.segments.subList(0, normal.size - 1), normal.isAbsolute);
+            return new Path(normal.segments.subList(0, normal.size - 1), normal.isAbsolute, true);
         }
     }
 
@@ -168,13 +175,16 @@ public final class Path implements Comparable<Path> {
     /**
      * If the given path is {@link Path#isAbsolute absolute}, trivially returns the other path; else, returns the path
      * obtained by concatenating the segments of this path and of the other path. The returned path is not {@link
-     * #normalize() normalized}.
+     * #normalize() normalized}. The resulting path is is a {@link #isFolder() folder} iff the other path is a folder.
      */
     public Path resolve(Path other) {
         if (other.isAbsolute) {
             return other;
         } else {
-            return new Path(ImmutableList.copyOf(Iterables.concat(this.segments, other.segments)), this.isAbsolute);
+            return new Path(
+                    ImmutableList.copyOf(Iterables.concat(this.segments, other.segments)),
+                    this.isAbsolute,
+                    other.isFolder);
         }
     }
 
@@ -209,7 +219,7 @@ public final class Path implements Comparable<Path> {
             return right;
         }
 
-        return new Path(right.segments.subList(left.size, right.size), false);
+        return new Path(right.segments.subList(left.size, right.size), false, right.isFolder);
     }
 
     /** Equivalent to {@code relativize(new Path(other)}. */
@@ -223,7 +233,7 @@ public final class Path implements Comparable<Path> {
      * {@code /a/b/c} starts with {@code /a/b} but not with {@code a/b}, and {@code /a/../b} starts with {@code b} but
      * not with {@code a}.
      */
-    public boolean startsWith(Path other) {
+    public boolean startsWithSegment(Path other) {
         Path left = this.normalize();
         Path right = other.normalize();
 
@@ -241,26 +251,27 @@ public final class Path implements Comparable<Path> {
     /**
      * Returns true iff the segments of the given (normalized) other path are a suffix (including equality) of the
      * segments of this (normalized) path, unless this path is relative and the other path is absolute. For example,
-     * {@code a/b} ends with {@code b} and {@code a/b/..} ends with {@code a}.
+     * {@code a/b} ends with {@code b} and {@code a/b/..} ends with {@code a}. Note that this method is agnostic of
+     * whether one of the two paths is a {@link #isFolder() folder}, e.g., path {@code a/b} ends with {@code b/}.
      */
-    public boolean endsWith(Path other) {
+    public boolean endsWithSegment(Path other) {
         Path left = this.normalize();
         Path right = other.normalize();
 
         if (left.size < right.size) {
             return false;
-        }
-
-        // Same length
-        if (left.size == right.size) {
-            return left.toString().endsWith(right.toString());
-        }
-
-        // Other is shorter than left path
-        if (right.isAbsolute) {
-            return false;
+        } else if (left.size == right.size) {
+            if (!left.isAbsolute() && right.isAbsolute) {
+                return false;
+            } else {
+                return left.segments.equals(right.segments);
+            }
         } else {
-            return left.toString().endsWith(right.toString());
+            if (right.isAbsolute) {
+                return false;
+            } else {
+                return left.segments.subList(left.size - right.size, left.size).equals(right.segments);
+            }
         }
     }
 
@@ -295,10 +306,13 @@ public final class Path implements Comparable<Path> {
     }
 
     private String toStringInternal() {
-        if (isAbsolute) {
-            return "/" + PATH_JOINER.join(segments);
+        if (size == 0) {
+            return isAbsolute ? SEPARATOR : "";
         } else {
-            return PATH_JOINER.join(segments);
+            String prefix = isAbsolute ? SEPARATOR : "";
+            String suffix = isFolder ? SEPARATOR : "";
+
+            return prefix + PATH_JOINER.join(segments) + suffix;
         }
     }
 
