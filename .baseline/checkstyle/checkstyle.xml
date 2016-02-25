@@ -21,6 +21,10 @@
     <module name="NewlineAtEndOfFile"> <!-- Java Style Guide: Line ending: LF -->
         <property name="lineSeparator" value="lf"/>
     </module>
+    <module name="RegexpHeader">
+        <property name="header" value="^/\*$\n^ \* Copyright \d{4} Palantir Technologies, Inc\. All rights reserved\.$"/>
+        <property name="fileExtensions" value=".java,.ts"/>
+    </module>
     <module name="RegexpMultiline"> <!-- Development Practices: Writing good unit tests -->
         <property name="fileExtensions" value="java"/>
         <property name="format" value="@VisibleForTesting\s+(protected|public)"/>
@@ -165,6 +169,10 @@
         <module name="OverloadMethodsDeclarationOrder"/> <!-- Java Style Guide: Overloads: never split -->
         <module name="PackageAnnotation"/> <!-- Java Style Guide: Package statement -->
         <module name="PackageDeclaration"/> <!-- Java Style Guide: Package statement -->
+        <module name="PackageName"> <!-- Java Style Guide: Package names -->
+            <property name="format" value="^[a-z]+(\.[a-z][a-z0-9]*)*$"/>
+            <message key="name.invalidPattern" value="Package name ''{0}'' must match pattern ''{1}''."/>
+        </module>
         <module name="ParameterAssignment"/> <!-- Java Coding Guidelines: Final variables and parameters -->
         <module name="ParenPad"/> <!-- Java Style Guide: Horizontal whitespace -->
         <module name="RedundantImport"/> <!-- Java Style Guide: No unused imports -->
@@ -184,10 +192,6 @@
         <module name="RegexpSinglelineJava"> <!-- Java Coding Guidelines: Use appropriate assertion methods -->
             <property name="format" value="assertFalse\(.*[!=]="/>
             <property name="message" value="Use better assertion method(s): assertEquals(), assertNull(), assertSame(), etc."/>
-        </module>
-        <module name="RegexpSinglelineJava"> <!-- Java Coding Guidelines: Avoid assertNotNull -->
-            <property name="format" value="assertNotNull\("/>
-            <property name="message" value="assertNotNull() almost always shows up in a lazily-written so-called test for coverage. Do something else to validate the expected output: assertEquals(), assertFalse(String.isEmpty()), etc."/>
         </module>
         <module name="RegexpSinglelineJava"> <!-- Java Coding Guidelines: Use appropriate assertion methods -->
             <property name="format" value="assertTrue\(!"/>
@@ -291,9 +295,6 @@
             <property name="processJavadoc" value="true"/>
         </module>
         <module name="UpperEll"/> <!-- Java Style Guide: Numeric Literals -->
-        <module name="VariableDeclarationUsageDistance"> <!-- Java Style Guide: Declared when needed, initialized as soon as possible -->
-            <property name="ignoreVariablePattern" value="stopwatch"/>
-        </module>
         <module name="VisibilityModifier"/> <!-- Java Coding Guidelines: Minimize mutability -->
         <module name="WhitespaceAfter"/> <!-- Java Style Guide: Horizontal whitespace -->
         <module name="WhitespaceAround"> <!-- Java Style Guide: Horizontal whitespace -->
