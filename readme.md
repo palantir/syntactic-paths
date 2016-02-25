@@ -1,4 +1,5 @@
-[![Build Status](https://travis-ci.org/uschi2000/syntactic-paths.svg)](https://travis-ci.org/uschi2000/syntactic-paths)
+[![CircleCI Build Status](https://circleci.com/gh/palantir/syntactic-paths/tree/develop.svg)](https://circleci.com/gh/palantir/syntactic-paths)
+[![Download](https://api.bintray.com/packages/palantir/releases/syntactic-paths/images/download.svg) ](https://bintray.com/palantir/releases/syntactic-paths/_latestVersion)
 
 Syntactic Path Library
 ======================
