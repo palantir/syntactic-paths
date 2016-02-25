@@ -10,7 +10,7 @@ buildscript {
 }
 
 plugins {
-    id 'com.palantir.git-version' version '0.2.0'
+    id 'com.palantir.git-version' version '0.4.0'
 }
 
 apply plugin: 'com.palantir.baseline-config' // provides baselineUpdateConfig task
@@ -22,7 +22,7 @@ repositories {
 
 allprojects {
     version gitVersion()
-    group 'uschi2000.paths'
+    group 'com.palantir.syntactic-paths'
 }
 
 subprojects {
