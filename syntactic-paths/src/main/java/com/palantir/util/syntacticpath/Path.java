@@ -16,18 +16,12 @@
 
 package com.palantir.util.syntacticpath;
 
-import com.google.common.base.Joiner;
-import com.google.common.base.Objects;
-import com.google.common.base.Splitter;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import org.apache.commons.lang3.StringUtils;
+import java.util.Objects;
 
 /**
  * OS-independent implementation of Unix-style syntactic paths, loosely analogous to {@code sun.nio.fs.UnixPath}.
@@ -51,40 +45,30 @@ import org.apache.commons.lang3.StringUtils;
  */
 public final class Path implements Comparable<Path> {
 
-    public static final Path ROOT_PATH = new Path(ImmutableList.<String>of(), true, true);
+    public static final Path ROOT_PATH = new Path(new ArrayList<String>(), true, true);
     public static final char SEPARATOR_CHAR = '/';
     public static final String SEPARATOR = "/";
     public static final String BACKWARDS_PATH = "..";
 
-    private static final Splitter PATH_SPLITTER = Splitter.on(SEPARATOR_CHAR).omitEmptyStrings();
-    static final Joiner PATH_JOINER = Joiner.on(SEPARATOR_CHAR);
     private static final char[] ILLEGAL_CHARS = new char[] {0};
-    private static final List<String> ILLEGAL_SEGMENTS = ImmutableList.of(".");
-
+    private static final List<String> ILLEGAL_SEGMENTS = new ArrayList<String>() {
+        {
+            add(".");
+        }
+    };
     private final List<String> segments;
     private final int size;
     private final boolean isAbsolute;
     private final boolean isFolder;
-    private final Supplier<String> stringRepresentation;
-    private final Supplier<Path> normalizedPath;
+    private final String stringRepresentation;
+    private Path lazyInitializedNormalizedPath;
 
     private Path(final List<String> segments, final boolean isAbsolute, boolean isFolder) {
         this.segments = segments;
         this.size = segments.size();
         this.isAbsolute = isAbsolute;
         this.isFolder = isFolder;
-        stringRepresentation = Suppliers.memoize(new Supplier<String>() {
-            @Override
-            public String get() {
-                return toStringInternal();
-            }
-        });
-        normalizedPath = Suppliers.memoize(new Supplier<Path>() {
-            @Override
-            public Path get() {
-                return normalizeInternal();
-            }
-        });
+        this.stringRepresentation = toStringInternal();
     }
 
     Path(String input) {
@@ -92,13 +76,18 @@ public final class Path implements Comparable<Path> {
     }
 
     private static List<String> checkAndSplit(String path) {
-        return checkSegments(ImmutableList.copyOf(PATH_SPLITTER.split(checkCharacters(path))));
+        return checkSegments(split(checkCharacters(path)));
     }
 
     private static String checkCharacters(String path) {
-        if (StringUtils.containsAny(path, ILLEGAL_CHARS)) {
-            throw new IllegalArgumentException("Path contains illegal characters: " + path);
+        for (char c : path.toCharArray()) {
+            for (char illegal : ILLEGAL_CHARS) {
+                if (illegal == c) {
+                    throw new IllegalArgumentException("Path contains illegal characters: " + path);
+                }
+            }
         }
+
         return path;
     }
 
@@ -110,7 +99,7 @@ public final class Path implements Comparable<Path> {
     }
 
     private Path normalizeInternal() {
-        LinkedList<String> normalSegments = Lists.newLinkedList();
+        LinkedList<String> normalSegments = new LinkedList<>();
         for (String segment : segments) {
             if (segment.equals(BACKWARDS_PATH)) {
                 if (!normalSegments.isEmpty()) {
@@ -131,7 +120,10 @@ public final class Path implements Comparable<Path> {
      * Backward navigation in empty paths is a no-op, e.g., {@code a/../..} normalizes to the empty path.
      */
     public Path normalize() {
-        return normalizedPath.get();
+        if (lazyInitializedNormalizedPath == null) {
+            lazyInitializedNormalizedPath = normalizeInternal();
+        }
+        return lazyInitializedNormalizedPath;
     }
 
     /**
@@ -200,7 +192,7 @@ public final class Path implements Comparable<Path> {
             return other;
         } else {
             return new Path(
-                    ImmutableList.copyOf(Iterables.concat(this.segments, other.segments)),
+                    copyConcat(this.segments, other.segments),
                     this.isAbsolute,
                     other.isFolder);
         }
@@ -330,13 +322,52 @@ public final class Path implements Comparable<Path> {
             String prefix = isAbsolute ? SEPARATOR : "";
             String suffix = isFolder ? SEPARATOR : "";
 
-            return prefix + PATH_JOINER.join(segments) + suffix;
+            return prefix + join(segments) + suffix;
         }
     }
 
     /** Returns the string representation of this (non-normalized) path. */
     @Override
     public String toString() {
-        return stringRepresentation.get();
+        return stringRepresentation;
+    }
+
+    static String join(List<String> segments) {
+        if (segments.size() == 0) {
+            return "";
+        }
+
+        StringBuilder builder = new StringBuilder();
+        Iterator<String> segmentIterator = segments.iterator();
+        builder.append(segmentIterator.next());
+
+        while (segmentIterator.hasNext()) {
+            builder.append("/");
+            builder.append(segmentIterator.next());
+        }
+        return builder.toString();
+    }
+
+    private static List<String> split(String path) {
+        ArrayList<String> parts = new ArrayList<>();
+        for (String part : path.split(SEPARATOR_CHAR + "")) {
+            if (part.length() > 0) {
+                parts.add(part);
+            }
+        }
+        return parts;
+    }
+
+    private static List<String> copyConcat(List<String> left, List<String> right) {
+        ArrayList<String> list = new ArrayList<String>();
+
+        for (String str : left) {
+            list.add(str);
+        }
+
+        for (String str : right) {
+            list.add(str);
+        }
+        return list;
     }
 }
