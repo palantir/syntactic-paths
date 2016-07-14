@@ -3,6 +3,7 @@ sourceCompatibility = '1.7'
 apply from: "${rootDir}/gradle/publish.gradle"
 
 dependencies {
+    compile "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
     compile "com.google.guava:guava:${guavaVersion}"
     compile "org.apache.commons:commons-lang3:${commonsLangVersion}"
 

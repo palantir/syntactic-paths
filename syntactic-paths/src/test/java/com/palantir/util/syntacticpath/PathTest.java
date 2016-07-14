@@ -23,7 +23,10 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
+import java.io.IOException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -283,5 +286,25 @@ public final class PathTest {
         assertThat(new Path("").toString(), is(""));
         assertThat(new Path("/").toString(), is("/"));
         assertThat(new Path("a/").toString(), is("a/"));
+    }
+
+    @Test
+    public void testJsonSerialization() throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        assertThat(mapper.writeValueAsString(new Path("/a/b")), is("\"/a/b\""));
+        assertThat(mapper.writeValueAsString(new Path("a/b")), is("\"a/b\""));
+        assertThat(mapper.writeValueAsString(new Path("")), is("\"\""));
+        assertThat(mapper.writeValueAsString(new Path("/")), is("\"/\""));
+        assertThat(mapper.writeValueAsString(new Path("a/")), is("\"a/\""));
+    }
+
+    @Test
+    public void testJsonDeserialization() throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        assertThat(mapper.readValue("\"/a/b\"", Path.class), is(new Path("/a/b")));
+        assertThat(mapper.readValue("\"a/b\"", Path.class), is(new Path("a/b")));
+        assertThat(mapper.readValue("\"\"", Path.class), is(new Path("")));
+        assertThat(mapper.readValue("\"/\"", Path.class), is(new Path("/")));
+        assertThat(mapper.readValue("\"a/\"", Path.class), is(new Path("a/")));
     }
 }
