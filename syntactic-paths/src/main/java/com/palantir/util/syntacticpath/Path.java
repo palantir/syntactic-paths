@@ -16,14 +16,8 @@
 
 package com.palantir.util.syntacticpath;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
 import com.google.common.base.Splitter;
@@ -32,7 +26,6 @@ import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import java.io.IOException;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -58,8 +51,6 @@ import org.apache.commons.lang3.StringUtils;
  * The {@link #toString() string representation} of a path is the inverse to the {@link #Path(String) constructor},
  * i.e., for any valid path string {@code s} it holds that {@code s.equals(new Path(s).toString()}.
  */
-@JsonSerialize(using = Path.PathSerializer.class)
-@JsonDeserialize(using = Path.PathDeserializer.class)
 public final class Path implements Comparable<Path> {
 
     public static final Path ROOT_PATH = new Path(ImmutableList.<String>of(), true, true);
@@ -98,6 +89,7 @@ public final class Path implements Comparable<Path> {
         });
     }
 
+    @JsonCreator
     Path(String input) {
         this(checkAndSplit(input), input.startsWith(SEPARATOR), input.endsWith(SEPARATOR));
     }
@@ -346,27 +338,10 @@ public final class Path implements Comparable<Path> {
     }
 
     /** Returns the string representation of this (non-normalized) path. */
+    @JsonValue
     @Override
     public String toString() {
         return stringRepresentation.get();
     }
 
-    public static final class PathSerializer extends JsonSerializer<Path> {
-
-        @Override
-        public void serialize(Path path, JsonGenerator gen, SerializerProvider serializers)
-                throws IOException {
-            gen.writeObject(path.toString());
-        }
-
-    }
-
-    public static final class PathDeserializer extends JsonDeserializer<Path> {
-
-        @Override
-        public Path deserialize(JsonParser parser, DeserializationContext ctxt) throws IOException {
-            return Paths.get(parser.readValueAs(String.class));
-        }
-
-    }
 }
