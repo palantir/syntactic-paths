@@ -343,5 +343,4 @@ public final class Path implements Comparable<Path> {
     public String toString() {
         return stringRepresentation.get();
     }
-
 }

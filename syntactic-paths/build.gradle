@@ -3,10 +3,11 @@ sourceCompatibility = '1.7'
 apply from: "${rootDir}/gradle/publish.gradle"
 
 dependencies {
-    compile "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
+    compile "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}"
     compile "com.google.guava:guava:${guavaVersion}"
     compile "org.apache.commons:commons-lang3:${commonsLangVersion}"
 
+    testCompile "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
     testCompile "junit:junit:${junitVersion}"
     testCompile "org.hamcrest:hamcrest-all:${hamcrestVersion}"
 }
