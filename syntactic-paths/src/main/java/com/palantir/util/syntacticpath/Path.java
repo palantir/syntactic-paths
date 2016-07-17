@@ -16,6 +16,8 @@
 
 package com.palantir.util.syntacticpath;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
 import com.google.common.base.Splitter;
@@ -87,6 +89,7 @@ public final class Path implements Comparable<Path> {
         });
     }
 
+    @JsonCreator
     Path(String input) {
         this(checkAndSplit(input), input.startsWith(SEPARATOR), input.endsWith(SEPARATOR));
     }
@@ -335,6 +338,7 @@ public final class Path implements Comparable<Path> {
     }
 
     /** Returns the string representation of this (non-normalized) path. */
+    @JsonValue
     @Override
     public String toString() {
         return stringRepresentation.get();
