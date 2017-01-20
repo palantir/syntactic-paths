@@ -19,7 +19,7 @@ Simple Gradle setup:
     }
     
     dependencies {
-        compile 'uschi2000:syntactic-paths:0.1.0'
+        compile 'com.palantir.syntactic-paths:syntactic-paths:0.6.0'
     }
 
 In Java:
