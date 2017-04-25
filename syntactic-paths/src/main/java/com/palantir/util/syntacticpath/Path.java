@@ -71,7 +71,7 @@ public final class Path implements Comparable<Path> {
     private final Supplier<Path> normalizedPath;
 
     private Path(final List<String> segments, final boolean isAbsolute, boolean isFolder) {
-        this.segments = segments;
+        this.segments = ImmutableList.copyOf(segments);
         this.size = segments.size();
         this.isAbsolute = isAbsolute;
         this.isFolder = isFolder;
@@ -306,6 +306,14 @@ public final class Path implements Comparable<Path> {
         }
 
         return ROOT_PATH.resolve(this);
+    }
+
+    /**
+     * Returns the segments of this path, i.e., the list of directories and the file name (if they exist). For example,
+     * the segments of path {@code /abc/def} are {@code abc} and {@code def}.
+     */
+    public List<String> getSegments() {
+        return segments;
     }
 
     @Override
