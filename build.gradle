@@ -1,10 +1,11 @@
 buildscript {
     repositories {
         jcenter()
+        maven { url "http://palantir.bintray.com/releases" }
     }
 
     dependencies {
-        classpath "com.palantir:gradle-baseline-java:${baselineVersion}"
+        classpath "com.palantir.baseline:gradle-baseline-java:${baselineVersion}"
         classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:${bintrayPlugin}"
     }
 }
@@ -16,25 +17,26 @@ plugins {
 apply plugin: 'com.palantir.baseline-config' // provides baselineUpdateConfig task
 apply plugin: 'com.palantir.baseline-idea'
 
-repositories {
-    jcenter() // needed for baselineUpdateConfig task
+dependencies {
+    baseline group: 'com.palantir.baseline', name: 'gradle-baseline-java-config', version: baselineVersion, ext: 'zip'
 }
 
 allprojects {
     version gitVersion()
     group 'com.palantir.syntactic-paths'
+
+    repositories {
+        jcenter()
+        maven { url "http://palantir.bintray.com/releases" } // needed for baselineUpdateConfig task
+    }
 }
 
 subprojects {
     apply plugin: 'java'
     apply plugin: 'com.palantir.baseline-checkstyle'
     apply plugin: 'com.palantir.baseline-eclipse'
-    apply plugin: 'com.palantir.baseline-findbugs'
+    apply plugin: 'com.palantir.baseline-error-prone'
     apply plugin: 'com.palantir.baseline-idea'
-
-    repositories {
-        jcenter()
-    }
 
     sourceCompatibility = 1.7
 }
