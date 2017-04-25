@@ -10,7 +10,7 @@ general:
 
 test:
   override:
-    - ./gradlew build
+      - ./gradlew build --stacktrace
 
 deployment:
   release:
