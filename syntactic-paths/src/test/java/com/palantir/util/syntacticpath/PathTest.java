@@ -16,6 +16,7 @@
 
 package com.palantir.util.syntacticpath;
 
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -286,5 +287,15 @@ public final class PathTest {
             assertThat(mapper.writeValueAsString(new Path(path)), is("\"" + path + "\""));
             assertThat(mapper.readValue("\"" + path + "\"", Path.class), is(new Path(path)));
         }
+    }
+
+    @Test
+    public void testGetSegments() throws Exception {
+        assertThat(new Path("/a/b").getSegments(), contains("a", "b"));
+        assertThat(new Path("a/b").getSegments(), contains("a", "b"));
+        assertThat(new Path("a/b/").getSegments(), contains("a", "b"));
+        assertThat(new Path("a//b").getSegments(), contains("a", "b"));
+        assertThat(new Path("a/a/b").getSegments(), contains("a", "a", "b"));
+        assertThat(new Path("").getSegments().size(), is(0));
     }
 }
