@@ -25,11 +25,10 @@ import java.util.Iterator;
 public final class Paths {
     private Paths() {}
 
-
     /**
      * Constructs a new {@link Path} from the given segments by joining the segments by {@link Path#SEPARATOR path
-     * separator "/"} and invoking {@link Path(String)}. The returned path is {@link Path#isAbsolute() absolute} iff the
-     * first non-blank segment starts with the {@link Path#SEPARATOR path separator "/"}.
+     * separator "/"} and invoking {@link Path#Path(String)}. The returned path is {@link Path#isAbsolute() absolute}
+     * iff the first non-blank segment starts with the {@link Path#SEPARATOR path separator "/"}.
      */
     public static Path get(String... segments) {
         Iterator<String> nonBlankSegments = Iterators.filter(Iterators.forArray(segments), new Predicate<String>() {
