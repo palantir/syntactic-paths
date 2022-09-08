@@ -27,7 +27,7 @@ apply plugin: 'com.palantir.git-version'
 apply plugin: 'com.palantir.jdks.latest'
 
 javaVersions {
-    libraryTarget = 8
+    libraryTarget = 11
     runtime = 17
 }
 
