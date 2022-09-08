@@ -19,16 +19,14 @@ package com.palantir.util.syntacticpath;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.base.Joiner;
-import com.google.common.base.Objects;
 import com.google.common.base.Splitter;
-import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Supplier;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -75,18 +73,8 @@ public final class Path implements Comparable<Path> {
         this.size = segments.size();
         this.isAbsolute = isAbsolute;
         this.isFolder = isFolder;
-        stringRepresentation = Suppliers.memoize(new Supplier<String>() {
-            @Override
-            public String get() {
-                return toStringInternal();
-            }
-        });
-        normalizedPath = Suppliers.memoize(new Supplier<Path>() {
-            @Override
-            public Path get() {
-                return normalizeInternal();
-            }
-        });
+        this.stringRepresentation = Suppliers.memoize(this::toStringInternal);
+        this.normalizedPath = Suppliers.memoize(this::normalizeInternal);
     }
 
     @JsonCreator
@@ -113,11 +101,12 @@ public final class Path implements Comparable<Path> {
     }
 
     private Path normalizeInternal() {
-        LinkedList<String> normalSegments = Lists.newLinkedList();
+        List<String> normalSegments = new ArrayList<>();
         for (String segment : segments) {
             if (segment.equals(BACKWARDS_PATH)) {
-                if (!normalSegments.isEmpty()) {
-                    normalSegments.removeLast();
+                int lastIndex = normalSegments.size() - 1;
+                if (lastIndex >= 0) {
+                    normalSegments.remove(lastIndex);
                 } else {
                     // Nothing to do.
                 }
@@ -323,7 +312,7 @@ public final class Path implements Comparable<Path> {
 
     @Override
     public boolean equals(Object ob) {
-        if ((ob != null) && (ob instanceof Path)) {
+        if (ob instanceof Path) {
             return compareTo((Path) ob) == 0;
         }
         return false;
@@ -331,7 +320,7 @@ public final class Path implements Comparable<Path> {
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(segments.toArray());
+        return segments.hashCode();
     }
 
     private String toStringInternal() {
