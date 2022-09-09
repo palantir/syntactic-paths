@@ -20,7 +20,7 @@ import static com.palantir.logsafe.testing.Assertions.assertThatLoggableExceptio
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.palantir.logsafe.exceptions.SafeNullPointerException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public final class PathsTest {
 
