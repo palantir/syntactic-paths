@@ -16,8 +16,7 @@
 
 package com.palantir.util.syntacticpath;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 
@@ -25,24 +24,24 @@ public final class PathsTest {
 
     @Test
     public void test_singleElement() {
-        assertThat(Paths.get(""), is(new Path("")));
-        assertThat(Paths.get("/"), is(new Path("/")));
-        assertThat(Paths.get("a"), is(new Path("a")));
-        assertThat(Paths.get("/a"), is(new Path("/a")));
-        assertThat(Paths.get("/a/"), is(new Path("/a/")));
+        assertThat(Paths.get("")).isEqualTo(new Path(""));
+        assertThat(Paths.get("/")).isEqualTo(new Path("/"));
+        assertThat(Paths.get("a")).isEqualTo(new Path("a"));
+        assertThat(Paths.get("/a")).isEqualTo(new Path("/a"));
+        assertThat(Paths.get("/a/")).isEqualTo(new Path("/a/"));
     }
 
     @Test
     public void test_multipleElements() {
-        assertThat(Paths.get("", "b"), is(new Path("b")));
-        assertThat(Paths.get("", "", "b"), is(new Path("b")));
-        assertThat(Paths.get("", "", "/b"), is(new Path("/b")));
-        assertThat(Paths.get("", "", "/", "b"), is(new Path("/b")));
-        assertThat(Paths.get("a", "b"), is(new Path("a/b")));
-        assertThat(Paths.get("a", "/"), is(new Path("a/")));
-        assertThat(Paths.get("/a", "b"), is(new Path("/a/b")));
-        assertThat(Paths.get("/a", "b", "c", "d"), is(new Path("/a/b/c/d")));
-        assertThat(Paths.get("/a", "/b", "/c", "/d", "/"), is(new Path("/a/b/c/d/")));
-        assertThat(Paths.get("/a", "/b", "//", "/c"), is(new Path("/a/b/c")));
+        assertThat(Paths.get("", "b")).isEqualTo(new Path("b"));
+        assertThat(Paths.get("", "", "b")).isEqualTo(new Path("b"));
+        assertThat(Paths.get("", "", "/b")).isEqualTo(new Path("/b"));
+        assertThat(Paths.get("", "", "/", "b")).isEqualTo(new Path("/b"));
+        assertThat(Paths.get("a", "b")).isEqualTo(new Path("a/b"));
+        assertThat(Paths.get("a", "/")).isEqualTo(new Path("a/"));
+        assertThat(Paths.get("/a", "b")).isEqualTo(new Path("/a/b"));
+        assertThat(Paths.get("/a", "b", "c", "d")).isEqualTo(new Path("/a/b/c/d"));
+        assertThat(Paths.get("/a", "/b", "/c", "/d", "/")).isEqualTo(new Path("/a/b/c/d/"));
+        assertThat(Paths.get("/a", "/b", "//", "/c")).isEqualTo(new Path("/a/b/c"));
     }
 }
