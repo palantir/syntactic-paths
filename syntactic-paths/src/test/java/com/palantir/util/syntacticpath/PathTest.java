@@ -16,16 +16,15 @@
 
 package com.palantir.util.syntacticpath;
 
+import static com.palantir.logsafe.testing.Assertions.assertThatLoggableExceptionThrownBy;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
+import com.palantir.logsafe.UnsafeArg;
+import com.palantir.logsafe.exceptions.SafeIllegalArgumentException;
 import java.io.IOException;
 import java.util.Objects;
-import org.assertj.core.api.HamcrestCondition;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -43,23 +42,20 @@ public final class PathTest {
     @Test
     public void testConstructor_illegalCharacters() {
         String path = new String(new char[] {'a', 0, 'b'});
-        try {
-            new Path(path);
-            fail("Should have thrown");
-        } catch (IllegalArgumentException e) {
-            assertThat(e.getMessage()).isEqualTo("Path contains illegal characters: " + path);
-        }
+        assertThatLoggableExceptionThrownBy(() -> new Path(path))
+                .isInstanceOf(SafeIllegalArgumentException.class)
+                .hasMessage("Path contains illegal characters: {path=a\u0000b}")
+                .hasExactlyArgs(UnsafeArg.of("path", "a\u0000b"));
     }
 
     @Test
     public void testConstructor_illegalSegments() {
         for (String illegal : new String[] {"."}) {
             String path = "a/" + illegal + "/b";
-            try {
-                new Path(path);
-            } catch (IllegalArgumentException e) {
-                assertThat(e.getMessage()).isEqualTo("Path contains illegal segments: [a, " + illegal + ", b]");
-            }
+            assertThatLoggableExceptionThrownBy(() -> new Path(path))
+                    .isInstanceOf(SafeIllegalArgumentException.class)
+                    .hasMessage("Path contains illegal segments: {segments=[a, ., b]}")
+                    .hasExactlyArgs(UnsafeArg.of("segments", ImmutableList.of("a", ".", "b")));
         }
     }
 
@@ -120,14 +116,13 @@ public final class PathTest {
         assertThat(new Path("/a/b/c").relativize("/a/b/c/d/e/f")).isEqualTo(new Path("d/e/f"));
 
         for (String path : ImmutableList.of("/", "/a/b", "a/b")) {
-            try {
-                new Path(path).relativize(new Path(path));
-            } catch (IllegalArgumentException e) {
-                assertThat(e.getMessage())
-                        .isEqualTo(String.format(
-                                "Relativize requires this path to be a proper prefix of the other path: %s vs %s",
-                                path, path));
-            }
+            assertThatLoggableExceptionThrownBy(() -> new Path(path).relativize(new Path(path)))
+                    .isInstanceOf(SafeIllegalArgumentException.class)
+                    .hasMessage(String.format(
+                            "Relativize requires this path to be a proper prefix of the other path:"
+                                    + " {left=%s, right=%s}",
+                            path, path))
+                    .hasExactlyArgs(UnsafeArg.of("left", new Path(path)), UnsafeArg.of("right", new Path(path)));
         }
     }
 
@@ -148,25 +143,28 @@ public final class PathTest {
 
     @Test
     public void testRelativize_differentPaths() {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("Cannot relativize absolute vs relative path: /a vs a/b");
-        new Path("/a").relativize(new Path("a/b"));
+        assertThatLoggableExceptionThrownBy(() -> new Path("/a").relativize(new Path("a/b")))
+                .isInstanceOf(SafeIllegalArgumentException.class)
+                .hasMessage("Cannot relativize absolute vs relative path: {left=/a, right=a/b}")
+                .hasExactlyArgs(UnsafeArg.of("left", new Path("/a")), UnsafeArg.of("right", new Path("a/b")));
     }
 
     @Test
     public void testRelativize_noPrefix() {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage(
-                "Relativize requires this path to be a proper prefix of the other path: /a/b/c vs /a/b/d");
-        new Path("/a/b/c").relativize(new Path("/a/b/d"));
+        assertThatLoggableExceptionThrownBy(() -> new Path("/a/b/c").relativize(new Path("/a/b/d")))
+                .isInstanceOf(SafeIllegalArgumentException.class)
+                .hasMessage("Relativize requires this path to be a proper prefix of the other path:"
+                        + " {left=/a/b/c, right=/a/b/d}")
+                .hasExactlyArgs(UnsafeArg.of("left", new Path("/a/b/c")), UnsafeArg.of("right", new Path("/a/b/d")));
     }
 
     @Test
     public void testRelativize_differentLengths() {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage(
-                "Relativize requires this path to be a proper prefix of the other path: /a/b/c vs /a/b");
-        new Path("/a/b/c").relativize(new Path("/a/b"));
+        assertThatLoggableExceptionThrownBy(() -> new Path("/a/b/c").relativize(new Path("/a/b")))
+                .isInstanceOf(SafeIllegalArgumentException.class)
+                .hasMessage("Relativize requires this path to be a proper prefix of the other path:"
+                        + " {left=/a/b/c, right=/a/b}")
+                .hasExactlyArgs(UnsafeArg.of("left", new Path("/a/b/c")), UnsafeArg.of("right", new Path("/a/b")));
     }
 
     @Test
@@ -291,7 +289,7 @@ public final class PathTest {
     }
 
     @Test
-    public void testGetSegments() throws Exception {
+    public void testGetSegments() {
         assertThat(new Path("/a/b").getSegments()).containsExactly("a", "b");
         assertThat(new Path("a/b").getSegments()).containsExactly("a", "b");
         assertThat(new Path("a/b/").getSegments()).containsExactly("a", "b");
@@ -305,7 +303,7 @@ public final class PathTest {
     public void testEqualsAndHashCode() {
         Path path = new Path("/a/b/c/d");
         assertThat(path).isEqualTo(new Path("/a/b/c/d"));
-        assertThat(path).is(new HamcrestCondition<>(is(not(new Path("/a/b/c")))));
+        assertThat(path).isNotEqualTo(new Path("/a/b/c"));
 
         assertThat(path.hashCode()).isEqualTo(Objects.hash(path.getSegments().toArray()));
         assertThat(path.hashCode())

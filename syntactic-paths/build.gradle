@@ -4,9 +4,11 @@ apply plugin: 'com.palantir.revapi'
 dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-annotations'
     implementation 'com.google.guava:guava'
+    implementation 'com.palantir.safe-logging:preconditions'
+    implementation 'com.palantir.safe-logging:safe-logging'
 
     testImplementation 'com.fasterxml.jackson.core:jackson-databind'
+    testImplementation 'com.palantir.safe-logging:preconditions-assertj'
     testImplementation 'junit:junit'
-    testImplementation 'org.hamcrest:hamcrest-all'
     testImplementation 'org.assertj:assertj-core'
 }
