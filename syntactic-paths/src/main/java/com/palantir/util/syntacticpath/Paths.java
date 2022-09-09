@@ -16,10 +16,9 @@
 
 package com.palantir.util.syntacticpath;
 
-import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
-import com.google.common.collect.Iterators;
-import java.util.Iterator;
+import com.google.common.collect.Iterables;
+import java.util.Arrays;
 
 /** Factory methods for {@link Path}s. */
 public final class Paths {
@@ -31,12 +30,8 @@ public final class Paths {
      * iff the first non-blank segment starts with the {@link Path#SEPARATOR path separator "/"}.
      */
     public static Path get(String... segments) {
-        Iterator<String> nonBlankSegments = Iterators.filter(Iterators.forArray(segments), new Predicate<String>() {
-            @Override
-            public boolean apply(String segment) {
-                return !Strings.isNullOrEmpty(segment);
-            }
-        });
+        Iterable<String> nonBlankSegments =
+                Iterables.filter(Arrays.asList(segments), segment -> !Strings.isNullOrEmpty(segment));
         return new Path(Path.PATH_JOINER.join(nonBlankSegments));
     }
 }

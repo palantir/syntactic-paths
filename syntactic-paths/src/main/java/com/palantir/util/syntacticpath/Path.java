@@ -26,7 +26,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import java.util.ArrayDeque;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
@@ -71,9 +70,9 @@ public final class Path implements Comparable<Path> {
     private final Supplier<String> stringRepresentation;
     private final Supplier<Path> normalizedPath;
 
-    private Path(final Collection<String> segments, final boolean isAbsolute, boolean isFolder) {
+    private Path(final Iterable<String> segments, final boolean isAbsolute, boolean isFolder) {
         this.segments = ImmutableList.copyOf(segments);
-        this.size = segments.size();
+        this.size = Iterables.size(segments);
         this.isAbsolute = isAbsolute;
         this.isFolder = isFolder;
         this.stringRepresentation = Suppliers.memoize(this::toStringInternal);
@@ -86,7 +85,7 @@ public final class Path implements Comparable<Path> {
     }
 
     private static List<String> checkAndSplit(String path) {
-        return checkSegments(ImmutableList.copyOf(PATH_SPLITTER.split(checkCharacters(path))));
+        return checkSegments(PATH_SPLITTER.splitToList(checkCharacters(path)));
     }
 
     private static String checkCharacters(String path) {
@@ -189,10 +188,7 @@ public final class Path implements Comparable<Path> {
         if (other.isAbsolute) {
             return other;
         } else {
-            return new Path(
-                    ImmutableList.copyOf(Iterables.concat(this.segments, other.segments)),
-                    this.isAbsolute,
-                    other.isFolder);
+            return new Path(Iterables.concat(this.segments, other.segments), this.isAbsolute, other.isFolder);
         }
     }
 
