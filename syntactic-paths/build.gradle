@@ -4,7 +4,6 @@ apply plugin: 'com.palantir.revapi'
 dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-annotations'
     implementation 'com.google.guava:guava'
-    implementation 'org.apache.commons:commons-lang3'
 
     testImplementation 'com.fasterxml.jackson.core:jackson-databind'
     testImplementation 'junit:junit'

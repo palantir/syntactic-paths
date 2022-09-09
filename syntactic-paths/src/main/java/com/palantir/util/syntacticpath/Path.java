@@ -20,21 +20,23 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Supplier;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * OS-independent implementation of Unix-style syntactic paths, loosely analogous to {@code sun.nio.fs.UnixPath}.
  * <p/>
- * Syntactically, paths are composed from segments (which are arbitrary UTF strings that do not contain {@code '/'} and
+ * Syntactically, paths are composed of segments (which are arbitrary UTF strings that do not contain {@code '/'} and
  * are not {@code '.'}) separated by the {@link #SEPARATOR separator character '/'}. For example, {@code foo/bar/baz} is
  * a path.
  * <p/>
@@ -53,15 +55,14 @@ import org.apache.commons.lang3.StringUtils;
  */
 public final class Path implements Comparable<Path> {
 
-    public static final Path ROOT_PATH = new Path(ImmutableList.<String>of(), true, true);
+    public static final Path ROOT_PATH = new Path(ImmutableList.of(), true, true);
     public static final char SEPARATOR_CHAR = '/';
     public static final String SEPARATOR = "/";
     public static final String BACKWARDS_PATH = "..";
 
     private static final Splitter PATH_SPLITTER = Splitter.on(SEPARATOR_CHAR).omitEmptyStrings();
     static final Joiner PATH_JOINER = Joiner.on(SEPARATOR_CHAR);
-    private static final char[] ILLEGAL_CHARS = new char[] {0};
-    private static final List<String> ILLEGAL_SEGMENTS = ImmutableList.of(".");
+    private static final Set<String> ILLEGAL_SEGMENTS = ImmutableSet.of(".");
 
     private final List<String> segments;
     private final int size;
@@ -89,10 +90,10 @@ public final class Path implements Comparable<Path> {
     }
 
     private static String checkCharacters(String path) {
-        if (StringUtils.containsAny(path, ILLEGAL_CHARS)) {
-            throw new IllegalArgumentException("Path contains illegal characters: " + path);
+        if (Strings.isNullOrEmpty(path) || path.indexOf((char) 0) == -1) {
+            return path;
         }
-        return path;
+        throw new IllegalArgumentException("Path contains illegal characters: " + path);
     }
 
     private static List<String> checkSegments(List<String> segments) {
@@ -182,7 +183,7 @@ public final class Path implements Comparable<Path> {
     /**
      * If the given path is {@link Path#isAbsolute absolute}, trivially returns the other path; else, returns the path
      * obtained by concatenating the segments of this path and of the other path. The returned path is not {@link
-     * #normalize() normalized}. The resulting path is is a {@link #isFolder() folder} iff the other path is a folder.
+     * #normalize() normalized}. The resulting path is a {@link #isFolder() folder} iff the other path is a folder.
      */
     public Path resolve(Path other) {
         if (other.isAbsolute) {
