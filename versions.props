@@ -1,4 +1,4 @@
-com.fasterxml.jackson.core:jackson-databind = 2.13.2.1
+com.fasterxml.jackson.core:jackson-databind = 2.13.3
 com.google.guava:guava = 31.1-jre
 junit:junit = 4.12
 org.assertj:assertj-core = 3.23.1
