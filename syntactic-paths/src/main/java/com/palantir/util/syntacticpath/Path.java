@@ -25,6 +25,9 @@ import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import com.palantir.logsafe.Preconditions;
+import com.palantir.logsafe.UnsafeArg;
+import com.palantir.logsafe.exceptions.SafeIllegalArgumentException;
 import java.util.ArrayDeque;
 import java.util.Collections;
 import java.util.Deque;
@@ -85,6 +88,7 @@ public final class Path implements Comparable<Path> {
     }
 
     private static List<String> checkAndSplit(String path) {
+        Preconditions.checkNotNull(path, "path cannot be null");
         return checkSegments(PATH_SPLITTER.splitToList(checkCharacters(path)));
     }
 
@@ -92,12 +96,13 @@ public final class Path implements Comparable<Path> {
         if (Strings.isNullOrEmpty(path) || path.indexOf((char) 0) == -1) {
             return path;
         }
-        throw new IllegalArgumentException("Path contains illegal characters: " + path);
+        throw new SafeIllegalArgumentException("Path contains illegal characters", UnsafeArg.of("path", path));
     }
 
     private static List<String> checkSegments(List<String> segments) {
         if (!Collections.disjoint(segments, ILLEGAL_SEGMENTS)) {
-            throw new IllegalArgumentException("Path contains illegal segments: " + segments);
+            throw new SafeIllegalArgumentException(
+                    "Path contains illegal segments", UnsafeArg.of("segments", segments));
         }
         return segments;
     }
@@ -211,12 +216,17 @@ public final class Path implements Comparable<Path> {
         Path right = other.normalize();
 
         if (left.isAbsolute() != right.isAbsolute()) {
-            throw new IllegalArgumentException("Cannot relativize absolute vs relative path: " + left + " vs " + right);
+            throw new SafeIllegalArgumentException(
+                    "Cannot relativize absolute vs relative path",
+                    UnsafeArg.of("left", left),
+                    UnsafeArg.of("right", right));
         }
         if (left.segments.size() >= right.segments.size()
                 || !left.segments.equals(right.segments.subList(0, left.size))) {
-            throw new IllegalArgumentException(
-                    "Relativize requires this path to be a proper prefix of the other path: " + left + " vs " + right);
+            throw new SafeIllegalArgumentException(
+                    "Relativize requires this path to be a proper prefix of the other path",
+                    UnsafeArg.of("left", left),
+                    UnsafeArg.of("right", right));
         }
 
         if (left.size == 0 && !left.isAbsolute) {

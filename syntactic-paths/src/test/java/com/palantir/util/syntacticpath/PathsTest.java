@@ -16,8 +16,10 @@
 
 package com.palantir.util.syntacticpath;
 
+import static com.palantir.logsafe.testing.Assertions.assertThatLoggableExceptionThrownBy;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.palantir.logsafe.exceptions.SafeNullPointerException;
 import org.junit.Test;
 
 public final class PathsTest {
@@ -32,7 +34,38 @@ public final class PathsTest {
     }
 
     @Test
+    public void test_singleElement_null() {
+        assertThatLoggableExceptionThrownBy(() -> Paths.get((String) null))
+                .isInstanceOf(SafeNullPointerException.class)
+                .hasMessage("path cannot be null")
+                .hasNoArgs();
+
+        assertThatLoggableExceptionThrownBy(() -> Paths.get((String) null))
+                .isInstanceOf(SafeNullPointerException.class)
+                .hasMessage("path cannot be null")
+                .hasNoArgs();
+
+        assertThatLoggableExceptionThrownBy(() -> new Path(null))
+                .isInstanceOf(SafeNullPointerException.class)
+                .hasMessage("path cannot be null")
+                .hasNoArgs();
+    }
+
+    @Test
+    public void test_singleElement_null_array() {
+        String[] segments = null;
+        assertThatLoggableExceptionThrownBy(() -> Paths.get(segments))
+                .isInstanceOf(SafeNullPointerException.class)
+                .hasMessage("segments cannot be null")
+                .hasNoArgs();
+    }
+
+    @Test
     public void test_multipleElements() {
+        assertThat(Paths.get("a", "")).isEqualTo(new Path("a"));
+        assertThat(Paths.get("a", null)).isEqualTo(new Path("a"));
+        assertThat(Paths.get("a", "", "b")).isEqualTo(new Path("a/b"));
+        assertThat(Paths.get("a", null, "b")).isEqualTo(new Path("a/b"));
         assertThat(Paths.get("", "b")).isEqualTo(new Path("b"));
         assertThat(Paths.get("", "", "b")).isEqualTo(new Path("b"));
         assertThat(Paths.get("", "", "/b")).isEqualTo(new Path("/b"));

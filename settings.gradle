@@ -1,4 +1,4 @@
-rootProject.name = 'syntatic-paths'
+rootProject.name = 'syntactic-paths-root'
 
 include 'syntactic-paths'
 
