@@ -23,8 +23,10 @@ import com.google.common.base.Splitter;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
-import java.util.ArrayList;
+import java.util.ArrayDeque;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.List;
 import java.util.function.Supplier;
 import org.apache.commons.lang3.StringUtils;
@@ -68,7 +70,7 @@ public final class Path implements Comparable<Path> {
     private final Supplier<String> stringRepresentation;
     private final Supplier<Path> normalizedPath;
 
-    private Path(final List<String> segments, final boolean isAbsolute, boolean isFolder) {
+    private Path(final Collection<String> segments, final boolean isAbsolute, boolean isFolder) {
         this.segments = ImmutableList.copyOf(segments);
         this.size = segments.size();
         this.isAbsolute = isAbsolute;
@@ -101,15 +103,10 @@ public final class Path implements Comparable<Path> {
     }
 
     private Path normalizeInternal() {
-        List<String> normalSegments = new ArrayList<>();
+        Deque<String> normalSegments = new ArrayDeque<>(segments.size());
         for (String segment : segments) {
             if (segment.equals(BACKWARDS_PATH)) {
-                int lastIndex = normalSegments.size() - 1;
-                if (lastIndex >= 0) {
-                    normalSegments.remove(lastIndex);
-                } else {
-                    // Nothing to do.
-                }
+                normalSegments.pollLast();
             } else {
                 normalSegments.add(segment);
             }
