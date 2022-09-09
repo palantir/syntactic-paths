@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.palantir.logsafe.Preconditions;
+import com.palantir.logsafe.Unsafe;
 import com.palantir.logsafe.UnsafeArg;
 import com.palantir.logsafe.exceptions.SafeIllegalArgumentException;
 import java.util.ArrayDeque;
@@ -55,6 +56,7 @@ import java.util.function.Supplier;
  * The {@link #toString() string representation} of a path is the inverse to the {@link #Path(String) constructor},
  * i.e., for any valid path string {@code s} it holds that {@code s.equals(new Path(s).toString()}.
  */
+@Unsafe
 public final class Path implements Comparable<Path> {
 
     public static final Path ROOT_PATH = new Path(ImmutableList.of(), true, true);
