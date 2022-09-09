@@ -8,4 +8,5 @@ dependencies {
     testImplementation 'com.fasterxml.jackson.core:jackson-databind'
     testImplementation 'junit:junit'
     testImplementation 'org.hamcrest:hamcrest-all'
+    testImplementation 'org.assertj:assertj-core'
 }
