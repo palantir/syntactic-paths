@@ -1,13 +1,11 @@
-sourceCompatibility = '1.7'
-
-apply from: "${rootDir}/gradle/publish.gradle"
+apply plugin: 'com.palantir.external-publish-jar'
+apply plugin: 'com.palantir.revapi'
 
 dependencies {
-    compile "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}"
-    compile "com.google.guava:guava:${guavaVersion}"
-    compile "org.apache.commons:commons-lang3:${commonsLangVersion}"
+    implementation 'com.fasterxml.jackson.core:jackson-annotations'
+    implementation 'com.google.guava:guava'
 
-    testCompile "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
-    testCompile "junit:junit:${junitVersion}"
-    testCompile "org.hamcrest:hamcrest-all:${hamcrestVersion}"
+    testImplementation 'com.fasterxml.jackson.core:jackson-databind'
+    testImplementation 'junit:junit'
+    testImplementation 'org.hamcrest:hamcrest-all'
 }

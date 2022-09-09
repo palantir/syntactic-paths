@@ -1,0 +1,8 @@
+type: improvement
+improvement:
+  description: |-
+    Modernize to JDK 11, CircleCI, and Gradle infrastructure
+
+    This repo has not had much love in the past 5 years, and is now ready for Kindergarten and to keep up with the rules for morning meeting, CI, auto-release, excavators, etc.
+  links:
+  - https://github.com/palantir/syntactic-paths/pull/8

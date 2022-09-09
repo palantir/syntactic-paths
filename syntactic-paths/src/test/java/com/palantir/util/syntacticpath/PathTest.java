@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Palantir Technologies, Inc. All rights reserved.
+ * (c) Copyright 2016 Palantir Technologies Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,15 +18,18 @@ package com.palantir.util.syntacticpath;
 
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import java.io.IOException;
+import java.util.Objects;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -46,6 +49,7 @@ public final class PathTest {
         String path = new String(new char[] {'a', 0, 'b'});
         try {
             new Path(path);
+            fail("Should have thrown");
         } catch (IllegalArgumentException e) {
             assertThat(e.getMessage(), is("Path contains illegal characters: " + path));
         }
@@ -123,9 +127,11 @@ public final class PathTest {
             try {
                 new Path(path).relativize(new Path(path));
             } catch (IllegalArgumentException e) {
-                assertThat(e.getMessage(), is(String.format(
-                        "Relativize requires this path to be a proper prefix of the other path: %s vs %s",
-                        path, path)));
+                assertThat(
+                        e.getMessage(),
+                        is(String.format(
+                                "Relativize requires this path to be a proper prefix of the other path: %s vs %s",
+                                path, path)));
             }
         }
     }
@@ -297,5 +303,19 @@ public final class PathTest {
         assertThat(new Path("a//b").getSegments(), contains("a", "b"));
         assertThat(new Path("a/a/b").getSegments(), contains("a", "a", "b"));
         assertThat(new Path("").getSegments().size(), is(0));
+    }
+
+    @Test
+    @SuppressWarnings("DeprecatedGuavaObjects") // testing back-compat
+    public void testEqualsAndHashCode() {
+        Path path = new Path("/a/b/c/d");
+        assertThat(path, is(new Path("/a/b/c/d")));
+        assertThat(path, is(not(new Path("/a/b/c"))));
+
+        assertThat(path.hashCode(), is(Objects.hash(path.getSegments().toArray())));
+        assertThat(
+                path.hashCode(),
+                is(com.google.common.base.Objects.hashCode(path.getSegments().toArray())));
+        assertThat(path.hashCode(), is(path.getSegments().hashCode()));
     }
 }

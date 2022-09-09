@@ -1,0 +1,16 @@
+# Run ./gradlew --write-locks to regenerate this file
+com.fasterxml.jackson.core:jackson-annotations:2.13.2 (1 constraints: 88123721)
+com.google.code.findbugs:jsr305:3.0.2 (1 constraints: 170aecb4)
+com.google.errorprone:error_prone_annotations:2.11.0 (1 constraints: 460a32bf)
+com.google.guava:failureaccess:1.0.1 (1 constraints: 140ae1b4)
+com.google.guava:guava:31.1-jre (1 constraints: 47069c47)
+com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava (1 constraints: bd17c918)
+com.google.j2objc:j2objc-annotations:1.3 (1 constraints: b809eda0)
+org.checkerframework:checker-qual:3.12.0 (1 constraints: 480a3bbf)
+
+[Test dependencies]
+com.fasterxml.jackson.core:jackson-core:2.13.2 (1 constraints: 88123721)
+com.fasterxml.jackson.core:jackson-databind:2.13.2.1 (1 constraints: 99053b46)
+junit:junit:4.12 (1 constraints: db04ff30)
+org.hamcrest:hamcrest-all:1.3 (1 constraints: a8041d2c)
+org.hamcrest:hamcrest-core:1.3 (1 constraints: cc05fe3f)

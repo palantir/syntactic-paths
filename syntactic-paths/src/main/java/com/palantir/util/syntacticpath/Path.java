@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Palantir Technologies, Inc. All rights reserved.
+ * (c) Copyright 2016 Palantir Technologies Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,22 +19,23 @@ package com.palantir.util.syntacticpath;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.base.Joiner;
-import com.google.common.base.Objects;
 import com.google.common.base.Splitter;
-import com.google.common.base.Supplier;
+import com.google.common.base.Strings;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
+import java.util.ArrayDeque;
 import java.util.Collections;
-import java.util.LinkedList;
+import java.util.Deque;
 import java.util.List;
-import org.apache.commons.lang3.StringUtils;
+import java.util.Set;
+import java.util.function.Supplier;
 
 /**
  * OS-independent implementation of Unix-style syntactic paths, loosely analogous to {@code sun.nio.fs.UnixPath}.
  * <p/>
- * Syntactically, paths are composed from segments (which are arbitrary UTF strings that do not contain {@code '/'} and
+ * Syntactically, paths are composed of segments (which are arbitrary UTF strings that do not contain {@code '/'} and
  * are not {@code '.'}) separated by the {@link #SEPARATOR separator character '/'}. For example, {@code foo/bar/baz} is
  * a path.
  * <p/>
@@ -53,15 +54,14 @@ import org.apache.commons.lang3.StringUtils;
  */
 public final class Path implements Comparable<Path> {
 
-    public static final Path ROOT_PATH = new Path(ImmutableList.<String>of(), true, true);
+    public static final Path ROOT_PATH = new Path(ImmutableList.of(), true, true);
     public static final char SEPARATOR_CHAR = '/';
     public static final String SEPARATOR = "/";
     public static final String BACKWARDS_PATH = "..";
 
     private static final Splitter PATH_SPLITTER = Splitter.on(SEPARATOR_CHAR).omitEmptyStrings();
     static final Joiner PATH_JOINER = Joiner.on(SEPARATOR_CHAR);
-    private static final char[] ILLEGAL_CHARS = new char[] {0};
-    private static final List<String> ILLEGAL_SEGMENTS = ImmutableList.of(".");
+    private static final Set<String> ILLEGAL_SEGMENTS = ImmutableSet.of(".");
 
     private final List<String> segments;
     private final int size;
@@ -70,23 +70,13 @@ public final class Path implements Comparable<Path> {
     private final Supplier<String> stringRepresentation;
     private final Supplier<Path> normalizedPath;
 
-    private Path(final List<String> segments, final boolean isAbsolute, boolean isFolder) {
+    private Path(final Iterable<String> segments, final boolean isAbsolute, boolean isFolder) {
         this.segments = ImmutableList.copyOf(segments);
-        this.size = segments.size();
+        this.size = Iterables.size(segments);
         this.isAbsolute = isAbsolute;
         this.isFolder = isFolder;
-        stringRepresentation = Suppliers.memoize(new Supplier<String>() {
-            @Override
-            public String get() {
-                return toStringInternal();
-            }
-        });
-        normalizedPath = Suppliers.memoize(new Supplier<Path>() {
-            @Override
-            public Path get() {
-                return normalizeInternal();
-            }
-        });
+        this.stringRepresentation = Suppliers.memoize(this::toStringInternal);
+        this.normalizedPath = Suppliers.memoize(this::normalizeInternal);
     }
 
     @JsonCreator
@@ -95,14 +85,14 @@ public final class Path implements Comparable<Path> {
     }
 
     private static List<String> checkAndSplit(String path) {
-        return checkSegments(ImmutableList.copyOf(PATH_SPLITTER.split(checkCharacters(path))));
+        return checkSegments(PATH_SPLITTER.splitToList(checkCharacters(path)));
     }
 
     private static String checkCharacters(String path) {
-        if (StringUtils.containsAny(path, ILLEGAL_CHARS)) {
-            throw new IllegalArgumentException("Path contains illegal characters: " + path);
+        if (Strings.isNullOrEmpty(path) || path.indexOf((char) 0) == -1) {
+            return path;
         }
-        return path;
+        throw new IllegalArgumentException("Path contains illegal characters: " + path);
     }
 
     private static List<String> checkSegments(List<String> segments) {
@@ -113,14 +103,10 @@ public final class Path implements Comparable<Path> {
     }
 
     private Path normalizeInternal() {
-        LinkedList<String> normalSegments = Lists.newLinkedList();
+        Deque<String> normalSegments = new ArrayDeque<>(segments.size());
         for (String segment : segments) {
             if (segment.equals(BACKWARDS_PATH)) {
-                if (!normalSegments.isEmpty()) {
-                    normalSegments.removeLast();
-                } else {
-                    // Nothing to do.
-                }
+                normalSegments.pollLast();
             } else {
                 normalSegments.add(segment);
             }
@@ -196,16 +182,13 @@ public final class Path implements Comparable<Path> {
     /**
      * If the given path is {@link Path#isAbsolute absolute}, trivially returns the other path; else, returns the path
      * obtained by concatenating the segments of this path and of the other path. The returned path is not {@link
-     * #normalize() normalized}. The resulting path is is a {@link #isFolder() folder} iff the other path is a folder.
+     * #normalize() normalized}. The resulting path is a {@link #isFolder() folder} iff the other path is a folder.
      */
     public Path resolve(Path other) {
         if (other.isAbsolute) {
             return other;
         } else {
-            return new Path(
-                    ImmutableList.copyOf(Iterables.concat(this.segments, other.segments)),
-                    this.isAbsolute,
-                    other.isFolder);
+            return new Path(Iterables.concat(this.segments, other.segments), this.isAbsolute, other.isFolder);
         }
     }
 
@@ -323,7 +306,7 @@ public final class Path implements Comparable<Path> {
 
     @Override
     public boolean equals(Object ob) {
-        if ((ob != null) && (ob instanceof Path)) {
+        if (ob instanceof Path) {
             return compareTo((Path) ob) == 0;
         }
         return false;
@@ -331,7 +314,7 @@ public final class Path implements Comparable<Path> {
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(segments.toArray());
+        return segments.hashCode();
     }
 
     private String toStringInternal() {
