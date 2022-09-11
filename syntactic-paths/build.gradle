@@ -9,6 +9,7 @@ dependencies {
 
     testImplementation 'com.fasterxml.jackson.core:jackson-databind'
     testImplementation 'com.palantir.safe-logging:preconditions-assertj'
-    testImplementation 'junit:junit'
     testImplementation 'org.assertj:assertj-core'
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api'
 }
