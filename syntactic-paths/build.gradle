@@ -1,5 +1,6 @@
 apply plugin: 'com.palantir.external-publish-jar'
 apply plugin: 'com.palantir.revapi'
+apply plugin: 'me.champeau.jmh'
 
 dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-annotations'
@@ -12,4 +13,31 @@ dependencies {
     testImplementation 'org.assertj:assertj-core'
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testImplementation 'org.junit.jupiter:junit-jupiter-api'
+
+    jmhAnnotationProcessor 'org.openjdk.jmh:jmh-generator-annprocess'
+    jmh 'com.fasterxml.jackson.core:jackson-annotations'
+}
+
+jmh {
+    // Use profilers to collect additional data. Supported profilers:
+    // [cl, comp, gc, jfr, stack, perf, perfnorm, perfasm, xperf, xperfasm, hs_cl, hs_comp, hs_gc, hs_rt, hs_thr]
+    //profilers = ['jfr']
+    //jvmArgsPrepend = ['-XX:+UnlockDiagnosticVMOptions', '-XX:+DebugNonSafepoints']
+    humanOutputFile = project.file("${resultsDir(project)}/results.txt")
+    resultsFile = project.file("${resultsDir(project)}/results.json")
+    resultFormat = 'JSON'
+}
+
+tasks.jmhCompileGeneratedClasses {
+    options.annotationProcessorPath = configurations.errorprone
+    options.errorprone.enabled = true
+}
+
+
+def resultsDir(Project project) {
+    String circleArtifactsDir = System.getenv("CIRCLE_ARTIFACTS");
+    if (circleArtifactsDir == null) {
+        return project.getBuildDir().toString() + "/results/jmh";
+    }
+    return circleArtifactsDir + "/jmh/" + project.getName();
 }
