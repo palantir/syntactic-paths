@@ -23,6 +23,9 @@ jmh {
     // [cl, comp, gc, jfr, stack, perf, perfnorm, perfasm, xperf, xperfasm, hs_cl, hs_comp, hs_gc, hs_rt, hs_thr]
     //profilers = ['jfr']
     //jvmArgsPrepend = ['-XX:+UnlockDiagnosticVMOptions', '-XX:+DebugNonSafepoints']
+    humanOutputFile = project.file("${resultsDir(project)}/results.txt")
+    resultsFile = project.file("${resultsDir(project)}/results.json")
+    resultFormat = 'JSON'
 }
 
 tasks.jmhCompileGeneratedClasses {
@@ -30,3 +33,11 @@ tasks.jmhCompileGeneratedClasses {
     options.errorprone.enabled = true
 }
 
+
+def resultsDir(Project project) {
+    String circleArtifactsDir = System.getenv("CIRCLE_ARTIFACTS");
+    if (circleArtifactsDir == null) {
+        return project.getBuildDir().toString() + "/results/jmh";
+    }
+    return circleArtifactsDir + "/jmh/" + project.getName();
+}
