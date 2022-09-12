@@ -31,6 +31,10 @@ public final class PathsTest {
         assertThat(Paths.get("a")).isEqualTo(new Path("a"));
         assertThat(Paths.get("/a")).isEqualTo(new Path("/a"));
         assertThat(Paths.get("/a/")).isEqualTo(new Path("/a/"));
+        assertThat(Paths.get("/a//b//c"))
+                .isEqualTo(new Path("/a/b/c"))
+                .isEqualTo(Paths.get("//a//b//c").normalize())
+                .isEqualTo(Paths.get("/a/b/c"));
     }
 
     @Test
@@ -62,6 +66,7 @@ public final class PathsTest {
 
     @Test
     public void test_multipleElements() {
+        assertThat(Paths.get()).isEqualTo(new Path(""));
         assertThat(Paths.get("a", "")).isEqualTo(new Path("a"));
         assertThat(Paths.get("a", null)).isEqualTo(new Path("a"));
         assertThat(Paths.get("a", "", "b")).isEqualTo(new Path("a/b"));

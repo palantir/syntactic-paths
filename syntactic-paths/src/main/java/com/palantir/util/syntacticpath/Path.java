@@ -21,20 +21,16 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
-import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.palantir.logsafe.Preconditions;
+import com.palantir.logsafe.SafeArg;
 import com.palantir.logsafe.Unsafe;
 import com.palantir.logsafe.UnsafeArg;
 import com.palantir.logsafe.exceptions.SafeIllegalArgumentException;
 import java.util.ArrayDeque;
-import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
-import java.util.Set;
-import java.util.function.Supplier;
 
 /**
  * OS-independent implementation of Unix-style syntactic paths, loosely analogous to {@code sun.nio.fs.UnixPath}.
@@ -65,23 +61,24 @@ public final class Path implements Comparable<Path> {
     public static final String BACKWARDS_PATH = "..";
 
     private static final Splitter PATH_SPLITTER = Splitter.on(SEPARATOR_CHAR).omitEmptyStrings();
-    static final Joiner PATH_JOINER = Joiner.on(SEPARATOR_CHAR);
-    private static final Set<String> ILLEGAL_SEGMENTS = ImmutableSet.of(".");
+    static final Joiner PATH_JOINER = Joiner.on(SEPARATOR_CHAR).skipNulls();
+    private static final char ILLEGAL_CHARACTER = (char) 0;
+    private static final String ILLEGAL_SEGMENT = ".";
 
     private final List<String> segments;
     private final int size;
     private final boolean isAbsolute;
     private final boolean isFolder;
-    private final Supplier<String> stringRepresentation;
-    private final Supplier<Path> normalizedPath;
+
+    // lazily memoize string and normalized Path representations
+    private transient String stringRepresentation;
+    private transient Path normalizedPath;
 
     private Path(final Iterable<String> segments, final boolean isAbsolute, boolean isFolder) {
         this.segments = ImmutableList.copyOf(segments);
-        this.size = Iterables.size(segments);
+        this.size = this.segments.size();
         this.isAbsolute = isAbsolute;
         this.isFolder = isFolder;
-        this.stringRepresentation = Suppliers.memoize(this::toStringInternal);
-        this.normalizedPath = Suppliers.memoize(this::normalizeInternal);
     }
 
     @JsonCreator
@@ -95,22 +92,25 @@ public final class Path implements Comparable<Path> {
     }
 
     private static String checkCharacters(String path) {
-        if (Strings.isNullOrEmpty(path) || path.indexOf((char) 0) == -1) {
+        if (Strings.isNullOrEmpty(path) || path.indexOf(ILLEGAL_CHARACTER) == -1) {
             return path;
         }
         throw new SafeIllegalArgumentException("Path contains illegal characters", UnsafeArg.of("path", path));
     }
 
     private static List<String> checkSegments(List<String> segments) {
-        if (!Collections.disjoint(segments, ILLEGAL_SEGMENTS)) {
+        if (segments.contains(ILLEGAL_SEGMENT)) {
             throw new SafeIllegalArgumentException(
-                    "Path contains illegal segments", UnsafeArg.of("segments", segments));
+                    "Path contains illegal segments",
+                    UnsafeArg.of("segments", segments),
+                    SafeArg.of("illegalSegment", ILLEGAL_SEGMENT));
+        } else {
+            return segments;
         }
-        return segments;
     }
 
     private Path normalizeInternal() {
-        Deque<String> normalSegments = new ArrayDeque<>(segments.size());
+        Deque<String> normalSegments = new ArrayDeque<>(size);
         for (String segment : segments) {
             if (segment.equals(BACKWARDS_PATH)) {
                 normalSegments.pollLast();
@@ -127,7 +127,12 @@ public final class Path implements Comparable<Path> {
      * Backward navigation in empty paths is a no-op, e.g., {@code a/../..} normalizes to the empty path.
      */
     public Path normalize() {
-        return normalizedPath.get();
+        Path path = this.normalizedPath;
+        if (path == null) {
+            path = normalizeInternal();
+            this.normalizedPath = path;
+        }
+        return path;
     }
 
     /**
@@ -223,8 +228,7 @@ public final class Path implements Comparable<Path> {
                     UnsafeArg.of("left", left),
                     UnsafeArg.of("right", right));
         }
-        if (left.segments.size() >= right.segments.size()
-                || !left.segments.equals(right.segments.subList(0, left.size))) {
+        if (left.size >= right.size || !left.segments.equals(right.segments.subList(0, left.size))) {
             throw new SafeIllegalArgumentException(
                     "Relativize requires this path to be a proper prefix of the other path",
                     UnsafeArg.of("left", left),
@@ -344,6 +348,11 @@ public final class Path implements Comparable<Path> {
     @JsonValue
     @Override
     public String toString() {
-        return stringRepresentation.get();
+        String path = this.stringRepresentation;
+        if (path == null) {
+            path = toStringInternal();
+            this.stringRepresentation = path;
+        }
+        return path;
     }
 }
