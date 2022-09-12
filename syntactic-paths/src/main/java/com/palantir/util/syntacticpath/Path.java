@@ -22,16 +22,15 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.palantir.logsafe.Preconditions;
+import com.palantir.logsafe.SafeArg;
 import com.palantir.logsafe.Unsafe;
 import com.palantir.logsafe.UnsafeArg;
 import com.palantir.logsafe.exceptions.SafeIllegalArgumentException;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.List;
-import java.util.Set;
 
 /**
  * OS-independent implementation of Unix-style syntactic paths, loosely analogous to {@code sun.nio.fs.UnixPath}.
@@ -63,7 +62,8 @@ public final class Path implements Comparable<Path> {
 
     private static final Splitter PATH_SPLITTER = Splitter.on(SEPARATOR_CHAR).omitEmptyStrings();
     static final Joiner PATH_JOINER = Joiner.on(SEPARATOR_CHAR).skipNulls();
-    private static final Set<String> ILLEGAL_SEGMENTS = ImmutableSet.of(".");
+    private static final char ILLEGAL_CHARACTER = (char) 0;
+    private static final String ILLEGAL_SEGMENT = ".";
 
     private final List<String> segments;
     private final int size;
@@ -92,28 +92,21 @@ public final class Path implements Comparable<Path> {
     }
 
     private static String checkCharacters(String path) {
-        if (Strings.isNullOrEmpty(path) || path.indexOf((char) 0) == -1) {
+        if (Strings.isNullOrEmpty(path) || path.indexOf(ILLEGAL_CHARACTER) == -1) {
             return path;
         }
         throw new SafeIllegalArgumentException("Path contains illegal characters", UnsafeArg.of("path", path));
     }
 
     private static List<String> checkSegments(List<String> segments) {
-        if (containsIllegalSegment(segments)) {
+        if (segments.contains(ILLEGAL_SEGMENT)) {
             throw new SafeIllegalArgumentException(
-                    "Path contains illegal segments", UnsafeArg.of("segments", segments));
+                    "Path contains illegal segments",
+                    UnsafeArg.of("segments", segments),
+                    SafeArg.of("illegalSegment", ILLEGAL_SEGMENT));
         } else {
             return segments;
         }
-    }
-
-    private static boolean containsIllegalSegment(Iterable<String> iterable) {
-        for (String segment : iterable) {
-            if (Path.ILLEGAL_SEGMENTS.contains(segment)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private Path normalizeInternal() {

@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
+import com.palantir.logsafe.SafeArg;
 import com.palantir.logsafe.UnsafeArg;
 import com.palantir.logsafe.exceptions.SafeIllegalArgumentException;
 import java.io.IOException;
@@ -49,8 +50,10 @@ public final class PathTest {
             String path = "a/" + illegal + "/b";
             assertThatLoggableExceptionThrownBy(() -> new Path(path))
                     .isInstanceOf(SafeIllegalArgumentException.class)
-                    .hasMessage("Path contains illegal segments: {segments=[a, ., b]}")
-                    .hasExactlyArgs(UnsafeArg.of("segments", ImmutableList.of("a", ".", "b")));
+                    .hasMessage("Path contains illegal segments: {segments=[a, ., b], illegalSegment=.}")
+                    .hasExactlyArgs(
+                            UnsafeArg.of("segments", ImmutableList.of("a", ".", "b")),
+                            SafeArg.of("illegalSegment", "."));
         }
     }
 
