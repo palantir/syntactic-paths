@@ -17,7 +17,7 @@
 package com.palantir.util.syntacticpath;
 
 import com.google.common.base.Strings;
-import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.palantir.logsafe.Preconditions;
 import java.util.Arrays;
 
@@ -32,9 +32,7 @@ public final class Paths {
      */
     public static Path get(String... segments) {
         Preconditions.checkNotNull(segments, "segments cannot be null");
-        Iterable<String> nonBlankSegments =
-                Iterables.filter(Arrays.asList(segments), segment -> !Strings.isNullOrEmpty(segment));
-        return new Path(Path.PATH_JOINER.join(nonBlankSegments));
+        return new Path(Path.PATH_JOINER.join(Lists.transform(Arrays.asList(segments), Strings::emptyToNull)));
     }
 
     public static Path get(String segment) {
