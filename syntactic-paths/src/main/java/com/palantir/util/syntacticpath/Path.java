@@ -86,7 +86,7 @@ public final class Path implements Comparable<Path> {
         this(checkAndSplit(input), input.startsWith(SEPARATOR), input.endsWith(SEPARATOR));
     }
 
-    private static Iterable<String> checkAndSplit(String path) {
+    private static List<String> checkAndSplit(String path) {
         Preconditions.checkNotNull(path, "path cannot be null");
         return checkSegments(PATH_SPLITTER.splitToList(checkCharacters(path)));
     }
@@ -98,7 +98,7 @@ public final class Path implements Comparable<Path> {
         throw new SafeIllegalArgumentException("Path contains illegal characters", UnsafeArg.of("path", path));
     }
 
-    private static Iterable<String> checkSegments(Iterable<String> segments) {
+    private static List<String> checkSegments(List<String> segments) {
         if (containsIllegalSegment(segments)) {
             throw new SafeIllegalArgumentException(
                     "Path contains illegal segments", UnsafeArg.of("segments", segments));
