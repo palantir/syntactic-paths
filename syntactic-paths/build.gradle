@@ -33,7 +33,6 @@ tasks.jmhCompileGeneratedClasses {
     options.errorprone.enabled = true
 }
 
-
 def resultsDir(Project project) {
     String circleArtifactsDir = System.getenv("CIRCLE_ARTIFACTS");
     if (circleArtifactsDir == null) {
