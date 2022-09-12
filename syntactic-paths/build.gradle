@@ -41,3 +41,5 @@ def resultsDir(Project project) {
     }
     return circleArtifactsDir + "/jmh/" + project.getName();
 }
+
+tasks.check.dependsOn('jmh')
