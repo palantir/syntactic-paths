@@ -17,9 +17,9 @@
 package com.palantir.util.syntacticpath;
 
 import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 import com.palantir.logsafe.Preconditions;
 import java.util.Arrays;
+import java.util.stream.Collectors;
 
 /** Factory methods for {@link Path}s. */
 public final class Paths {
@@ -32,7 +32,8 @@ public final class Paths {
      */
     public static Path get(String... segments) {
         Preconditions.checkNotNull(segments, "segments cannot be null");
-        return new Path(Path.PATH_JOINER.join(Lists.transform(Arrays.asList(segments), Strings::emptyToNull)));
+        return new Path(Path.PATH_JOINER.join(
+                Arrays.stream(segments).filter(s -> !Strings.isNullOrEmpty(s)).collect(Collectors.toList())));
     }
 
     public static Path get(String segment) {
