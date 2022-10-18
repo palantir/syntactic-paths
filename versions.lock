@@ -13,7 +13,7 @@ org.jetbrains:annotations:23.0.0 (1 constraints: 31115ed1)
 
 [Test dependencies]
 com.fasterxml.jackson.core:jackson-core:2.13.4 (1 constraints: 8a123921)
-com.fasterxml.jackson.core:jackson-databind:2.13.4.1 (1 constraints: 9b054146)
+com.fasterxml.jackson.core:jackson-databind:2.13.4.2 (1 constraints: 9c054246)
 com.palantir.safe-logging:preconditions-assertj:3.1.0 (1 constraints: 0605fd35)
 net.bytebuddy:byte-buddy:1.12.10 (1 constraints: 7b0bbcea)
 org.apiguardian:apiguardian-api:1.1.2 (5 constraints: 105480ac)
