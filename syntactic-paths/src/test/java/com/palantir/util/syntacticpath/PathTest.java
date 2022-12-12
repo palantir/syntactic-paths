@@ -293,7 +293,7 @@ public final class PathTest {
         assertThat(new Path("a/b/").getSegments()).containsExactly("a", "b");
         assertThat(new Path("a//b").getSegments()).containsExactly("a", "b");
         assertThat(new Path("a/a/b").getSegments()).containsExactly("a", "a", "b");
-        assertThat(new Path("").getSegments()).hasSize(0);
+        assertThat(new Path("").getSegments()).isEmpty();
     }
 
     @Test
