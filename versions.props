@@ -2,6 +2,6 @@ com.fasterxml.jackson.*:* = 2.15.3
 com.fasterxml.jackson.core:jackson-databind = 2.15.3
 com.google.guava:guava = 33.0.0-jre
 com.palantir.safe-logging:* = 3.6.0
-org.assertj:assertj-core = 3.24.2
+org.assertj:assertj-core = 3.25.0
 org.junit.jupiter:* = 5.10.1
 org.openjdk.jmh:* = 1.37
