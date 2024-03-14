@@ -1,14 +1,14 @@
 # Run ./gradlew writeVersionsLock to regenerate this file
 com.fasterxml.jackson.core:jackson-annotations:2.15.3 (2 constraints: c717fa71)
 com.google.code.findbugs:jsr305:3.0.2 (1 constraints: 170aecb4)
-com.google.errorprone:error_prone_annotations:2.23.0 (2 constraints: 7b1b8f88)
+com.google.errorprone:error_prone_annotations:2.26.1 (2 constraints: 7f1b5d89)
 com.google.guava:failureaccess:1.0.2 (1 constraints: 150ae2b4)
-com.google.guava:guava:33.0.0-jre (1 constraints: a6065d53)
+com.google.guava:guava:33.1.0-jre (1 constraints: a7066453)
 com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava (1 constraints: bd17c918)
-com.google.j2objc:j2objc-annotations:2.8 (1 constraints: be09f5a0)
+com.google.j2objc:j2objc-annotations:3.0.0 (1 constraints: 150aeab4)
 com.palantir.safe-logging:preconditions:3.7.0 (2 constraints: 3a19a1b5)
 com.palantir.safe-logging:safe-logging:3.7.0 (3 constraints: 3f2a5a21)
-org.checkerframework:checker-qual:3.41.0 (1 constraints: 4a0a44bf)
+org.checkerframework:checker-qual:3.42.0 (1 constraints: 4b0a47bf)
 org.jetbrains:annotations:24.1.0 (1 constraints: 331166d1)
 
 [Test dependencies]
