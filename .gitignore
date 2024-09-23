@@ -38,3 +38,6 @@ build*.gc.log
 
 # Jqwik property based testing
 .jqwik-database
+
+# Gradle JDKs setup
+!gradle/*
