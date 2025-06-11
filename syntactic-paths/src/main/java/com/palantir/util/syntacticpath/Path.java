@@ -65,7 +65,9 @@ public final class Path implements Comparable<Path> {
     private static final char ILLEGAL_CHARACTER = (char) 0;
     private static final String ILLEGAL_SEGMENT = ".";
 
+    @SuppressWarnings("for-rollout:PreferredInterfaceType")
     private final List<String> segments;
+
     private final int size;
     private final boolean isAbsolute;
     private final boolean isFolder;
@@ -74,7 +76,10 @@ public final class Path implements Comparable<Path> {
     private transient String stringRepresentation;
     private transient Path normalizedPath;
 
-    private Path(final Iterable<String> segments, final boolean isAbsolute, boolean isFolder) {
+    private Path(
+            @SuppressWarnings("for-rollout:UnnecessaryFinal") final Iterable<String> segments,
+            @SuppressWarnings("for-rollout:UnnecessaryFinal") final boolean isAbsolute,
+            boolean isFolder) {
         this.segments = ImmutableList.copyOf(segments);
         this.size = this.segments.size();
         this.isAbsolute = isAbsolute;
@@ -322,8 +327,8 @@ public final class Path implements Comparable<Path> {
 
     @Override
     public boolean equals(Object ob) {
-        if (ob instanceof Path) {
-            return compareTo((Path) ob) == 0;
+        if (ob instanceof Path path) {
+            return compareTo(path) == 0;
         }
         return false;
     }
