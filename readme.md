@@ -1,3 +1,7 @@
+<p align="right">
+<a href="https://autorelease.general.dmz.palantir.tech/palantir/syntactic-paths"><img src="https://img.shields.io/badge/Perform%20an-Autorelease-success.svg" alt="Autorelease"></a>
+</p>
+
 [![CircleCI Build Status](https://circleci.com/gh/palantir/syntactic-paths/tree/develop.svg)](https://circleci.com/gh/palantir/syntactic-paths)
 [![Download](https://api.bintray.com/packages/palantir/releases/syntactic-paths/images/download.svg) ](https://bintray.com/palantir/releases/syntactic-paths/_latestVersion)
 
