@@ -2,7 +2,7 @@
 
 com.fasterxml.jackson.core:jackson-annotations:2.20 (2 constraints: fd163324)
 
-com.google.errorprone:error_prone_annotations:2.41.0 (2 constraints: 7f1b9e88)
+com.google.errorprone:error_prone_annotations:2.41.0 (2 constraints: 4c1b146d)
 
 com.google.guava:failureaccess:1.0.3 (1 constraints: 160ae3b4)
 
@@ -12,9 +12,9 @@ com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava (1 c
 
 com.google.j2objc:j2objc-annotations:3.1 (1 constraints: b809f1a0)
 
-com.palantir.safe-logging:preconditions:3.9.0 (2 constraints: 3e191db6)
+com.palantir.safe-logging:preconditions:3.10.0 (2 constraints: 8e1975dd)
 
-com.palantir.safe-logging:safe-logging:3.9.0 (3 constraints: 452aac22)
+com.palantir.safe-logging:safe-logging:3.10.0 (3 constraints: bd2ac281)
 
 org.jetbrains:annotations:26.0.2 (1 constraints: 36116fd1)
 
@@ -28,7 +28,7 @@ com.fasterxml.jackson.core:jackson-core:2.20.1 (1 constraints: 85123121)
 
 com.fasterxml.jackson.core:jackson-databind:2.20.1 (1 constraints: 3705343b)
 
-com.palantir.safe-logging:preconditions-assertj:3.9.0 (1 constraints: 0e051536)
+com.palantir.safe-logging:preconditions-assertj:3.10.0 (1 constraints: 3605353b)
 
 net.bytebuddy:byte-buddy:1.17.7 (1 constraints: 560b56df)
 
@@ -38,21 +38,21 @@ org.apache.commons:commons-math3:3.6.1 (1 constraints: bf0adbcc)
 
 org.apiguardian:apiguardian-api:1.1.2 (6 constraints: 5366ce6e)
 
-org.assertj:assertj-core:3.27.6 (2 constraints: a719cee0)
+org.assertj:assertj-core:3.27.6 (2 constraints: aa19d1e0)
 
-org.junit.jupiter:junit-jupiter:6.0.1 (1 constraints: 48070970)
+org.junit.jupiter:junit-jupiter:6.0.2 (1 constraints: 49070b70)
 
-org.junit.jupiter:junit-jupiter-api:6.0.1 (4 constraints: 66343ab1)
+org.junit.jupiter:junit-jupiter-api:6.0.2 (4 constraints: 6a3451b2)
 
-org.junit.jupiter:junit-jupiter-engine:6.0.1 (1 constraints: 040ecb3b)
+org.junit.jupiter:junit-jupiter-engine:6.0.2 (1 constraints: 050ecc3b)
 
-org.junit.jupiter:junit-jupiter-params:6.0.1 (1 constraints: 040ecb3b)
+org.junit.jupiter:junit-jupiter-params:6.0.2 (1 constraints: 050ecc3b)
 
-org.junit.platform:junit-platform-commons:6.0.1 (2 constraints: d520474a)
+org.junit.platform:junit-platform-commons:6.0.2 (2 constraints: d7207a4a)
 
-org.junit.platform:junit-platform-engine:6.0.1 (2 constraints: ed22dc07)
+org.junit.platform:junit-platform-engine:6.0.2 (2 constraints: ef221108)
 
-org.junit.platform:junit-platform-launcher:6.0.1 (1 constraints: 09050a36)
+org.junit.platform:junit-platform-launcher:6.0.2 (1 constraints: 0a050b36)
 
 org.openjdk.jmh:jmh-core:1.37 (4 constraints: 2d349791)
 
