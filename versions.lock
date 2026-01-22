@@ -12,9 +12,9 @@ com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava (1 c
 
 com.google.j2objc:j2objc-annotations:3.1 (1 constraints: b809f1a0)
 
-com.palantir.safe-logging:preconditions:3.10.0 (2 constraints: 8e1975dd)
+com.palantir.safe-logging:preconditions:3.11.0 (2 constraints: 9019b4dd)
 
-com.palantir.safe-logging:safe-logging:3.10.0 (3 constraints: bd2ac281)
+com.palantir.safe-logging:safe-logging:3.11.0 (3 constraints: c02a6e82)
 
 org.jetbrains:annotations:26.0.2 (1 constraints: 36116fd1)
 
@@ -28,7 +28,7 @@ com.fasterxml.jackson.core:jackson-core:2.20.1 (1 constraints: 85123121)
 
 com.fasterxml.jackson.core:jackson-databind:2.20.1 (1 constraints: 3705343b)
 
-com.palantir.safe-logging:preconditions-assertj:3.10.0 (1 constraints: 3605353b)
+com.palantir.safe-logging:preconditions-assertj:3.11.0 (1 constraints: 3705383b)
 
 net.bytebuddy:byte-buddy:1.17.7 (1 constraints: 560b56df)
 
