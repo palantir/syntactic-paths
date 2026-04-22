@@ -12,3 +12,5 @@ rootProject.name = 'syntactic-paths-root'
 
 include 'syntactic-paths'
 
+
+throw new RuntimeException('''The excavator failed to run properly:\n\n''' + file('gradle/exception').text)
