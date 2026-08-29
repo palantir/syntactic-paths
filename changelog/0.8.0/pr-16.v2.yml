@@ -1,5 +1,0 @@
-type: improvement
-improvement:
-  description: Enforce safe logging
-  links:
-  - https://github.com/palantir/syntactic-paths/pull/16
