@@ -1,5 +1,0 @@
-type: improvement
-improvement:
-  description: Optimize path creation
-  links:
-  - https://github.com/palantir/syntactic-paths/pull/21
